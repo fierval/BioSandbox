@@ -18,14 +18,39 @@ open FsCheck
 open System
 open NUnit.Framework
 
+let genZero = gen {return 0}
+let zeroOrNot = Gen.frequency [(3, genZero); (1, Gen.choose(1, 10))]
+
+let generateRow  len = Gen.arrayOfLength len zeroOrNot
+let generateZeroRow len = Gen.arrayOfLength len genZero
+let genSingleRow len = Gen.frequency [(7, generateRow len); (1, generateZeroRow len)]
+
+type Generators =
+    static member SparseMatrix () =
+        let len = 10
+        let csr = true
+        let matrixCreate = Gen.map (fun row -> SparseMatrix.CreateMatrix row csr) (genSingleRow len)
+
+        let rec genMatrix mat size =
+            match size with
+            | 1 -> mat
+            | s when s > 1 -> 
+                let mat = 
+                    Gen.map2 
+                        (fun (m : SparseMatrix<int>) row -> 
+                            m.AddValues row
+                            m) mat (genSingleRow len)
+                genMatrix mat (s - 1)
+            | _ -> failwith "0 or negatives not allowed"
+        
+        fun s -> 
+            let sz = if s = 0 then 1 else s 
+            Gen.resize sz (genMatrix matrixCreate sz)
+        |> Gen.sized 
+        |> Arb.fromGen
+
+Arb.register<Generators>()
 
 // Define your library scripting code here
+//let mR = SparseMatrix.CreateMatrix sampleRows.[0] true
 
-let m = SparseMatrix.CreateMatrix [|1; 0; 0; 0; 0; 3; 4; 0; 0; 0; 1; 1|] true;;
-
-m.AddValues([|0; 0; 2; 0; 1; 0; 5; 0; 3; 0; 2; 0|])
-m.AddValues([|0; 0; 0; 0; 0; 0; 0; 0; 0; 0; 4; 0|])
-
-m.NNZ
-
-printfn "%A" m
