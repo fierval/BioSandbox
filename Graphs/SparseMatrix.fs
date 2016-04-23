@@ -21,22 +21,21 @@ type SparseMatrix<'a> (ops : INumeric<'a>, row : 'a seq, rowIndex : int seq, col
     let mutable nnz = rowIndex.[rowIndex.Count - 1]
     let rowSize = rowSize
 
-    let getNZCols row =
-        if row >= rowIndex.Count - 1 then
+    let getRowColRange rowCol =
+        if rowCol >= rowIndex.Count - 1 then
             failwith (if isCSR then "row index out of range" else "column index out of range")
 
-        let rowStart = rowIndex.[row]
-        let rowEnd = rowIndex.[row + 1] - 1
+        let rowStart = rowIndex.[rowCol]
+        let rowEnd = rowIndex.[rowCol + 1] - 1
 
+        rowStart, rowEnd
+
+    let getNZCols row =
+        let rowStart, rowEnd = getRowColRange row
         colIndex.GetRange(rowStart, rowEnd - rowStart + 1)
 
     let getNZVals row = 
-        if row >= rowIndex.Count - 1 then
-            failwith (if isCSR then "row index out of range" else "column index out of range")
-
-        let rowStart = rowIndex.[row]
-        let rowEnd = rowIndex.[row + 1] - 1
-
+        let rowStart, rowEnd = getRowColRange row
         values.GetRange(rowStart, rowEnd - rowStart + 1)
 
     let getRowCol row col =
@@ -64,7 +63,6 @@ type SparseMatrix<'a> (ops : INumeric<'a>, row : 'a seq, rowIndex : int seq, col
         |> fun l -> l + "\n" + elipsesRows
             
     member this.PrintMatrix = printMatrix()
-
     member this.GetNZValues = getNZVals
 
     ///<summary>
@@ -78,7 +76,6 @@ type SparseMatrix<'a> (ops : INumeric<'a>, row : 'a seq, rowIndex : int seq, col
         with get row = getNZCols row
 
     member this.NNZ = nnz
-
     member this.AddValues (row : 'a []) =
         if row.Length <> rowSize then failwith "wrong number of elements in the row/column"
         let colIdx, vals = 
