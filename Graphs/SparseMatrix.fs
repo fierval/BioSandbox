@@ -10,6 +10,7 @@ open System.Linq
 /// <summary>
 /// Sparse matrix implementation with CSR and CSC storage
 /// </summary>
+[<StructuredFormatDisplay("{PrintMatrix}")>]
 type SparseMatrix<'a> (ops : INumeric<'a>, row : 'a seq, rowIndex : int seq, colIndex : int seq, rowSize, isCSR : bool) =
 
     let isCSR = isCSR
@@ -45,7 +46,25 @@ type SparseMatrix<'a> (ops : INumeric<'a>, row : 'a seq, rowIndex : int seq, col
         let rowStart = rowIndex.[row]
         
         if valCol >= 0 then values.[rowStart + valCol] else ops.Zero
-        
+
+    let maxPrintVals = 20
+
+    let printMatrix () =
+        let rows, cols = if isCSR then rowIndex.Count - 1, rowSize else rowSize, rowIndex.Count - 1
+
+        let printRows, printCols = (if rows > maxPrintVals then maxPrintVals else rows), if cols > maxPrintVals then maxPrintVals else cols
+        let elipsesCols = if cols > maxPrintVals then "..." else ""
+        let elipsesRows = if rows > maxPrintVals then "..." else ""
+
+        [
+            for i = 0 to printRows - 1 do
+                yield sprintf "%A%s" [for j = 0 to printCols - 1 do yield getRowCol i j] elipsesCols
+        ]
+        |> List.reduce(fun acc e -> acc + "\n" + e)
+        |> fun l -> l + "\n" + elipsesRows
+            
+    member this.PrintMatrix = printMatrix()
+
     member this.GetNZValues = getNZVals
 
     ///<summary>
@@ -73,19 +92,7 @@ type SparseMatrix<'a> (ops : INumeric<'a>, row : 'a seq, rowIndex : int seq, col
         rowIndex.Add(rowIndex.[rowIndex.Count - 1] + vals.Length)
         nnz <- nnz + vals.Length
 
-    member this.PrintMatrix () =
-        let rows, cols = if isCSR then rowIndex.Count - 1, rowSize else rowSize, rowIndex.Count - 1
-
-        let printRows, printCols = (if rows > 10 then 10 else rows), if cols > 10 then 10 else cols
-        let elipses = if rows > 10 || cols > 10 then "..." else ""
-
-        for i = 0 to printRows - 1 do
-            let str = sprintf "%A%s" [for j = 0 to printCols - 1 do yield this.[i, j]] elipses
-            printfn "%s" str
-
-[<AutoOpen>]
-module SparseMatrix = 
-    let createMatrix (row : 'a []) (isCSR : bool) =
+    static member CreateMatrix (row : 'a []) (isCSR : bool) =
         let ops = GlobalAssociations.GetNumericAssociation<'a>()
         let colIdx, vals = 
             Array.zip [|0..row.Length - 1|] row 
@@ -93,5 +100,3 @@ module SparseMatrix =
             |> Array.unzip
 
         SparseMatrix(ops, vals, [0; vals.Length], colIdx, row.Length, isCSR)
-
-           
