@@ -25,29 +25,28 @@ let generateRow  len = Gen.arrayOfLength len zeroOrNot
 let generateZeroRow len = Gen.arrayOfLength len genZero
 let genSingleRow len = Gen.frequency [(7, generateRow len); (1, generateZeroRow len)]
 
+type SM = SparseMatrix<int>
+
 type Generators =
     static member SparseMatrix () =
-        let len = 10
-        let csr = true
-        let matrixCreate = Gen.map (fun row -> SparseMatrix.CreateMatrix row csr) (genSingleRow len)
+        let matrix =
+            gen {
+                let! csr = Gen.oneof[gen {return true}; gen {return false}]
+                let! len = Gen.choose(1, 1000)
+                let! s = Gen.choose(1, 1000)
 
-        let rec genMatrix mat size =
-            match size with
-            | 1 -> mat
-            | s when s > 1 -> 
-                let mat = 
-                    Gen.map2 
-                        (fun (m : SparseMatrix<int>) row -> 
-                            m.AddValues row
-                            m) mat (genSingleRow len)
-                genMatrix mat (s - 1)
-            | _ -> failwith "0 or negatives not allowed"
+                let rows = Gen.listOfLength s (genSingleRow len)
+                let! matrix = 
+                    Gen.map
+                        (fun (r : int [] list) -> 
+                            let m = SparseMatrix.CreateMatrix r.[0] csr
+                            for row in r.[1..] do
+                                m.AddValues row
+                            m) rows
+                return matrix
+            }
         
-        fun s -> 
-            let sz = if s = 0 then 1 else s 
-            Gen.resize sz (genMatrix matrixCreate sz)
-        |> Gen.sized 
-        |> Arb.fromGen
+        matrix |> Arb.fromGen
 
 Arb.register<Generators>()
 

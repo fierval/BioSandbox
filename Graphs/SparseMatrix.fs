@@ -48,22 +48,29 @@ type SparseMatrix<'a> (ops : INumeric<'a>, row : 'a seq, rowIndex : int seq, col
 
     let maxPrintVals = 20
 
+    // Pretty print for printfn "%A"
     let printMatrix () =
         let rows, cols = if isCSR then rowIndex.Count - 1, rowSize else rowSize, rowIndex.Count - 1
 
-        let printRows, printCols = (if rows > maxPrintVals then maxPrintVals else rows), if cols > maxPrintVals then maxPrintVals else cols
+        let printRows, printCols = 
+            (if rows > maxPrintVals then maxPrintVals else rows), 
+            if cols > maxPrintVals then maxPrintVals else cols
+
         let elipsesCols = if cols > maxPrintVals then "..." else ""
         let elipsesRows = if rows > maxPrintVals then "..." else ""
 
         [
             for i = 0 to printRows - 1 do
-                yield sprintf "%A%s" [for j = 0 to printCols - 1 do yield getRowCol i j] elipsesCols
+                yield sprintf "%A%s" 
+                    [for j = 0 to printCols - 1 do yield if isCSR then getRowCol i j else getRowCol j i] elipsesCols
         ]
         |> List.reduce(fun acc e -> acc + "\n" + e)
         |> fun l -> l + "\n" + elipsesRows
-            
-    member this.PrintMatrix = printMatrix()
+                    
+    member internal this.PrintMatrix = printMatrix()
     member this.GetNZValues = getNZVals
+    member this.Cols = if isCSR then rowSize else rowIndex.Count - 1
+    member this.Rows = if isCSR then rowIndex.Count - 1 else rowSize
 
     ///<summary>
     /// Returns a column (or a row) indices of nz elements
