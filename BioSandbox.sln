@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Graphs", "Graphs\Graphs.fsproj", "{CAA4EB40-CEE8-4910-86E5-FFBC1ECC8E89}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GraphVizExample", "GraphVizExample\GraphVizExample.fsproj", "{F6D4F28F-4C22-4D31-9E3E-59B8AAF47DBA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{CAA4EB40-CEE8-4910-86E5-FFBC1ECC8E89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAA4EB40-CEE8-4910-86E5-FFBC1ECC8E89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAA4EB40-CEE8-4910-86E5-FFBC1ECC8E89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6D4F28F-4C22-4D31-9E3E-59B8AAF47DBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6D4F28F-4C22-4D31-9E3E-59B8AAF47DBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6D4F28F-4C22-4D31-9E3E-59B8AAF47DBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6D4F28F-4C22-4D31-9E3E-59B8AAF47DBA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

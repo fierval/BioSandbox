@@ -13,7 +13,7 @@ open System.Linq
 [<StructuredFormatDisplay("{PrintMatrix}")>]
 type SparseMatrix<'a> (ops : INumeric<'a>, row : 'a seq, rowIndex : int seq, colIndex : int seq, rowSize, isCSR : bool) =
 
-    let isCSR = isCSR
+    let mutable isCSR = isCSR
     let ops = ops
     let mutable rowIndex  = rowIndex.ToList()
     let mutable colIndex = colIndex.ToList()
@@ -81,6 +81,8 @@ type SparseMatrix<'a> (ops : INumeric<'a>, row : 'a seq, rowIndex : int seq, col
 
     member this.Item
         with get row = getNZCols row
+
+    member this.Transpose() = isCSR <- not isCSR
 
     member this.NNZ = nnz
     member this.AddValues (row : 'a []) =
