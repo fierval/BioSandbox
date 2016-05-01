@@ -16,7 +16,6 @@ open Graphs
 // Testing
 open FsCheck
 open System
-open NUnit.Framework
 
 let genZero = gen {return 0}
 let zeroOrNot = Gen.frequency [(3, genZero); (1, Gen.choose(1, 10))]

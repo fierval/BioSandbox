@@ -5,14 +5,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>f6d4f28f-4c22-4d31-9e3e-59b8aaf47dba</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>GraphVizExample</RootNamespace>
-    <AssemblyName>GraphVizExample</AssemblyName>
+    <ProjectGuid>f8cfd85a-aeaf-47e4-8c5d-43669a7c00bf</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>DrawGraph</RootNamespace>
+    <AssemblyName>DrawGraph</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
-    <Name>GraphVizExample</Name>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Name>DrawGraph</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,9 +22,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Debug\GraphVizExample.XML</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\DrawGraph.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,19 +31,14 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Release\GraphVizExample.XML</DocumentationFile>
-    <Prefer32Bit>true</Prefer32Bit>
+    <DocumentationFile>bin\Release\DrawGraph.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Emgu.CV.UI">
-      <HintPath>..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.UI.dll</HintPath>
+      <HintPath>..\..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.UI.dll</HintPath>
     </Reference>
     <Reference Include="Emgu.CV.World">
-      <HintPath>..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.World.dll</HintPath>
-    </Reference>
-    <Reference Include="GraphVizWrapper">
-      <HintPath>..\..\GraphViz-C-Sharp-Wrapper\src\GraphVizWrapper\bin\Debug\GraphVizWrapper.dll</HintPath>
+      <HintPath>..\..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.World.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -55,11 +48,12 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.fs" />
-    <None Include="App.config" />
-    <None Include="test.fsx" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="drawGraphs.fs" />
+    <None Include="drawGraphsTest.fsx" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
