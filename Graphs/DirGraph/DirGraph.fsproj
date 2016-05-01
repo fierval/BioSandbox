@@ -5,14 +5,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>f8cfd85a-aeaf-47e4-8c5d-43669a7c00bf</ProjectGuid>
+    <ProjectGuid>cbd5b36f-44e7-4fb1-8b90-b73992c9c397</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>DrawGraph</RootNamespace>
-    <AssemblyName>DrawGraph</AssemblyName>
+    <RootNamespace>DirGraph</RootNamespace>
+    <AssemblyName>DirGraph</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>DrawGraph</Name>
+    <Name>DirGraph</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +22,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\DrawGraph.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\DirGraph.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,29 +31,8 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\DrawGraph.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\DirGraph.XML</DocumentationFile>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Emgu.CV.UI">
-      <HintPath>..\..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="Emgu.CV.World">
-      <HintPath>..\..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.World.dll</HintPath>
-    </Reference>
-    <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="drawGraphs.fs" />
-    <None Include="drawGraphsTest.fsx" />
-  </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
   </PropertyGroup>
@@ -70,6 +49,34 @@
     </Otherwise>
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
+  <ItemGroup>
+    <Compile Include="dirGraph.fs" />
+    <None Include="dirGraphTest.fsx" />
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Emgu.CV.UI">
+      <HintPath>..\..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.World">
+      <HintPath>..\..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.World.dll</HintPath>
+    </Reference>
+    <Reference Include="FsCheck">
+      <HintPath>..\..\packages\FsCheck.2.4.0\lib\net45\FsCheck.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms" />
+    <ProjectReference Include="..\DrawGraph\DrawGraph.fsproj">
+      <Name>DrawGraph</Name>
+      <Project>{f8cfd85a-aeaf-47e4-8c5d-43669a7c00bf}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
