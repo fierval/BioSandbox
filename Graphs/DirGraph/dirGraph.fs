@@ -125,7 +125,9 @@ module DirectedGraph =
                     (fun (v, c) -> 
                         if c.Length = 0 then v
                         else
-                        c |> Seq.map (fun s -> v + (if s.Length = 0 then "" else " -> " + s)) |> Seq.reduce (fun acc e -> acc + "; " + e))
+                        c 
+                        |> Array.map (fun s -> v + " -> " + s)
+                        |> Array.reduce (fun acc e -> acc + "; " + e))
                 |> Seq.reduce (fun acc e -> acc + "; " + e)
                 |> fun v -> "digraph {" + v + "}"
 
