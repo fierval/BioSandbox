@@ -16,22 +16,18 @@ let createGraph (graph : string) (graphVizPath : string option) =
     let graphFile = Path.GetTempFileName()
     File.WriteAllText(graphFile, graph)
 
-    let pi = ProcessStartInfo(Path.Combine(workingDir, "dot.exe"))
+    let pi = ProcessStartInfo(Path.Combine(workingDir, "sfdp.exe"))
     pi.CreateNoWindow <- true
     pi.ErrorDialog <- false;
     pi.UseShellExecute <- false;
-    pi.Arguments <- String.Format("-Tpng -O {0}", graphFile)
+    pi.Arguments <- String.Format("-Tpng -O -Goverlap=prism {0}", graphFile)
     pi.WorkingDirectory <- workingDir
     try
         let proc = new Process();
         proc.StartInfo <- pi
         proc.Start() |> ignore
 
-        try
-            proc.WaitForExit()
-        with
-        | _ -> ()
-
+        proc.WaitForExit()
         if proc.ExitCode = 0 then
             let mat = CvInvoke.Imread(graphFile + ".png", LoadImageType.AnyColor)
             let viewer = new ImageViewer(mat)

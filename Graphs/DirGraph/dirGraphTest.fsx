@@ -29,14 +29,14 @@ let connections len number =
             from,
                 (to' |> Seq.reduce (fun acc v -> acc + ", " + v))) pickFrom pickTo
 
-let graphGen = connections 4 10
+let graphGen = connections 4 1000
 let sw = Stopwatch()
 sw.Start()
-let graph = graphGen.Sample(3, 10) |> List.distinctBy fst |> List.map (fun (v, c) -> v + " -> " + c)
+let graph = graphGen.Sample(5, 1000) |> List.distinctBy fst |> List.map (fun (v, c) -> v + " -> " + c)
 sw.Stop()
 
 printfn "Took %A to generate a graph of %d vertices" sw.Elapsed graph.Length
 open Graphs
 
 let digr = DirectedGraph.FromStrings graph
-digr.Visualize();;
+digr.Visualize(emphasizeOutConnections = 5);;

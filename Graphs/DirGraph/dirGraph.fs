@@ -42,6 +42,10 @@ module DirectedGraph =
             let end' = rowIndex.[ordinal + 1] - 1
             colIndex.[start..end']
 
+        let asOrdinalsEnumerable () =
+            Seq.init nVertex (fun i -> i, getVertexConnections i)
+
+        let reverse () = ()
 
         /// <summary>
         /// Create the graph from an array of strings
@@ -116,8 +120,24 @@ module DirectedGraph =
 
         member this.AsEnumerable = Seq.init nVertex (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
 
-        member this.Visualize() =
+        /// <summary>
+        /// Visualize the graph. Should in/out connections be emphasized
+        /// </summary>
+        /// <param name="emphasizeInConnections">Optional. If present - should be the minimum number of inbound connections which would select the vertex for coloring.</param>
+        /// <param name="emphasizeOutConnections">Optional. If present - should be the minimum number of outbound connections which would select the vertex for coloring.</param>
+        member this.Visualize(?emphasizeInConnections, ?emphasizeOutConnections) =
+            let outConMin = defaultArg emphasizeOutConnections 0
+            let inConMin = defaultArg emphasizeInConnections 0
+            
             let self = this.AsEnumerable
+            
+            let coloring =
+                if outConMin = 0 && inConMin = 0 then String.Empty
+                else
+                    self
+                    |> Seq.filter (fun (_, con) -> con.Length >= outConMin)
+                    |> Seq.map (fun (v, _) -> String.Format("{0} [style=filled, color=green];", v))
+                    |> Seq.reduce (+)
 
             let visualizable = 
                 self 
@@ -129,7 +149,7 @@ module DirectedGraph =
                         |> Array.map (fun s -> v + " -> " + s)
                         |> Array.reduce (fun acc e -> acc + "; " + e))
                 |> Seq.reduce (fun acc e -> acc + "; " + e)
-                |> fun v -> "digraph {" + v + "}"
+                |> fun v -> "digraph {" + coloring + v + "}"
 
             createGraph visualizable None
 
