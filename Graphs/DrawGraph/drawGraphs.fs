@@ -7,7 +7,7 @@ open Emgu.CV
 open Emgu.CV.UI
 open Emgu.CV.CvEnum
 
-let createGraph (graphVizPath : string option) (graph : string) =
+let createGraph (graph : string) (graphVizPath : string option) =
     let workingDir = 
         match graphVizPath with
         | Some p -> p

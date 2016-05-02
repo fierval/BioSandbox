@@ -9,7 +9,7 @@
 #load "drawGraphs.fs"
 open DrawGraph
 
-createGraph None "digraph{a->b; b->c; 2->1; d->b; b->b; a->d}"
+createGraph "digraph{a->b; b->c; 2->1; d->b; b->b; a->d}" None
 
 // Define your library scripting code here
 

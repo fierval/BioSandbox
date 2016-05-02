@@ -3,6 +3,7 @@ open System.Collections.Generic
 open System.Linq
 open System.IO
 open System
+open DrawGraph
 
 #nowarn "25"
 
@@ -21,8 +22,26 @@ module DirectedGraph =
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
         let mutable nnz = rowIndex.[rowIndex.Length - 1]
+
+        let ordinalToNames () =
+            let res : string [] = Array.zeroCreate verticesNameToOrdinal.Count
+            verticesNameToOrdinal 
+            |> Seq.iter (fun kvp -> res.[kvp.Value] <- kvp.Key)
+
+            res
+
         let rowSize = nVertex
         let verticesNameToOrdinal = verticesNameToOrdinal
+        let verticesOrdinalToNames = ordinalToNames()
+
+        let nameFromOrdinal = fun ordinal -> verticesOrdinalToNames.[ordinal]
+        let ordinalFromName = fun name -> verticesNameToOrdinal.[name]
+
+        let getVertexConnections ordinal =
+            let start = rowIndex.[ordinal]
+            let end' = rowIndex.[ordinal + 1] - 1
+            colIndex.[start..end']
+
 
         /// <summary>
         /// Create the graph from an array of strings
@@ -90,3 +109,26 @@ module DirectedGraph =
             
             let lines = File.ReadLines(fileName)
             DirectedGraph.FromStrings(lines, isCSR)                
+
+        member this.Vertices = nVertex
+        member this.Item
+            with get vertex = ordinalFromName vertex |> getVertexConnections |> Array.map nameFromOrdinal
+
+        member this.AsEnumerable = Seq.init nVertex (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
+
+        member this.Visualize() =
+            let self = this.AsEnumerable
+
+            let visualizable = 
+                self 
+                |> Seq.map 
+                    (fun (v, c) -> 
+                        if c.Length = 0 then v
+                        else
+                        c |> Seq.map (fun s -> v + (if s.Length = 0 then "" else " -> " + s)) |> Seq.reduce (fun acc e -> acc + "; " + e))
+                |> Seq.reduce (fun acc e -> acc + "; " + e)
+                |> fun v -> "digraph {" + v + "}"
+
+            createGraph visualizable None
+
+            
