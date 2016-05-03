@@ -4,6 +4,7 @@ open System.Linq
 open System.IO
 open System
 open DrawGraph
+open System.Linq
 
 #nowarn "25"
 
@@ -21,7 +22,7 @@ module DirectedGraph =
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
         let mutable nnz = rowIndex.[rowIndex.Length - 1]
-
+        
         let ordinalToNames () =
             let res : string [] = Array.zeroCreate verticesNameToOrdinal.Count
             verticesNameToOrdinal 
@@ -44,8 +45,29 @@ module DirectedGraph =
         let asOrdinalsEnumerable () =
             Seq.init nVertex (fun i -> i, getVertexConnections i)
 
-        let reverse () = ()
+        let reverse =
+            lazy (
+                let allExistingRows = [0..rowIndex.Length - 1]                
 
+                let grSeq = 
+                    asOrdinalsEnumerable ()
+                    |> Seq.map (fun (i, verts) -> verts |> Seq.map (fun v -> (v, i)))
+                    |> Seq.collect id
+                    |> Seq.groupBy fst
+                    |> Seq.map (fun (key, sq) -> key, sq |> Seq.map snd |> Seq.toArray)
+
+                let allRows : seq<int * int []> = 
+                    allExistingRows.Except (grSeq |> Seq.map fst) |> Seq.map (fun e -> e, [||])
+                    |> fun col -> col.Union grSeq
+                    |> Seq.sortBy fst
+                    
+
+                let revRowIndex = allRows |> Seq.scan (fun st (key, v) -> st + v.Length) 0
+                let revColIndex = allRows |> Seq.collect snd
+
+                DirectedGraph(nVertex, revRowIndex, revColIndex, verticesNameToOrdinal)            
+            )
+            
         /// <summary>
         /// Create the graph from an array of strings
         /// </summary>
@@ -84,7 +106,6 @@ module DirectedGraph =
                 // extend the new rows
                 rowIndexRaw.AddRange (Array.zeroCreate newVertices.Length)
 
-
                 // for now we will store the number of vertices in the row index
                 // entry for the given row. We will need to scan it and update its values later
                 rowIndexRaw.[nameToOrdinal.[vertex]] <- connectedVertices.Length
@@ -115,6 +136,10 @@ module DirectedGraph =
 
         member this.AsEnumerable = Seq.init nVertex (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
 
+        member this.Reverse () = reverse.Force()
+        member this.RowIndex = rowIndex
+        member this.ColIndex = colIndex
+        
         /// <summary>
         /// Visualize the graph. Should in/out connections be emphasized
         /// </summary>
