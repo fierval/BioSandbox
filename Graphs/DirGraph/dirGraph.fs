@@ -17,6 +17,7 @@ module DirectedGraph =
     /// Format of the file:
     /// v -> a, b, c, d - v - unique vertex name for each line of the file. a, b, c, d - names of vertices it connects to.
     /// </summary>
+    [<StructuredFormatDisplay("{AsEnumerable}")>]
     type DirectedGraph (nVertex : int, rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<string, int>) = 
 
         let rowIndex  = rowIndex.ToArray()
@@ -67,7 +68,7 @@ module DirectedGraph =
 
                 DirectedGraph(nVertex, revRowIndex, revColIndex, verticesNameToOrdinal)            
             )
-            
+                        
         /// <summary>
         /// Create the graph from an array of strings
         /// </summary>
@@ -136,7 +137,7 @@ module DirectedGraph =
 
         member this.AsEnumerable = Seq.init nVertex (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
 
-        member this.Reverse () = reverse.Force()
+        member this.Reverse = reverse.Force()
         member this.RowIndex = rowIndex
         member this.ColIndex = colIndex
         

@@ -45,4 +45,4 @@ digr.Visualize(emphasizeOutConnections = 5);;
 
 let strs = ["a -> b, c, d"; "c -> b, e"; "1 -> 2, 3"; "2 -> a"; "4"]
 let gr = DirectedGraph.FromStrings strs
-let grRev = gr.Reverse()
+let grRev = gr.Reverse
