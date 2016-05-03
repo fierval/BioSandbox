@@ -16,9 +16,8 @@ module DirectedGraph =
     /// Format of the file:
     /// v -> a, b, c, d - v - unique vertex name for each line of the file. a, b, c, d - names of vertices it connects to.
     /// </summary>
-    type DirectedGraph (nVertex : int, rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<string, int>, ?isCSR : bool) = 
+    type DirectedGraph (nVertex : int, rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<string, int>) = 
 
-        let mutable isCSR = defaultArg isCSR true
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
         let mutable nnz = rowIndex.[rowIndex.Length - 1]
@@ -51,10 +50,8 @@ module DirectedGraph =
         /// Create the graph from an array of strings
         /// </summary>
         /// <param name="lines"></param>
-        /// <param name="isCSR"></param>
-        static member FromStrings (lines : string seq, ?isCSR : bool) =  
+        static member FromStrings (lines : string seq) =  
 
-            let isCSR = defaultArg isCSR true
             let rowIndexRaw = List<int>()
             let colIndex = List<int>()
             let vertices = List<string>()            
@@ -98,21 +95,19 @@ module DirectedGraph =
 
             lines |> Seq.iter addVertex
 
-            DirectedGraph(rowIndexRaw.Count, rowIndexRaw |> Seq.scan (+) 0, colIndex, nameToOrdinal, isCSR)
+            DirectedGraph(rowIndexRaw.Count, rowIndexRaw |> Seq.scan (+) 0, colIndex, nameToOrdinal)
 
 
         /// <summary>
         /// Create the graph from a file
         /// </summary>
         /// <param name="fileName"></param>
-        /// <param name="isCSR"></param>
-        static member FromFile (fileName : string, ?isCSR : bool) =
-            let isCSR = defaultArg isCSR true
+        static member FromFile (fileName : string) =
 
             if String.IsNullOrWhiteSpace fileName || not (File.Exists fileName) then failwith "Invalid file"
             
             let lines = File.ReadLines(fileName)
-            DirectedGraph.FromStrings(lines, isCSR)                
+            DirectedGraph.FromStrings(lines)                
 
         member this.Vertices = nVertex
         member this.Item

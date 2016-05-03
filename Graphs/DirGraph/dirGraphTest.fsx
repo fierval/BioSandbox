@@ -35,8 +35,14 @@ sw.Start()
 let graph = graphGen.Sample(5, 1000) |> List.distinctBy fst |> List.map (fun (v, c) -> v + " -> " + c)
 sw.Stop()
 
-printfn "Took %A to generate a graph of %d vertices" sw.Elapsed graph.Length
+printfn "Took %A to generate a graph of %d rows" sw.Elapsed graph.Length
 open Graphs
 
 let digr = DirectedGraph.FromStrings graph
+printfn "The graph has %d vertices" digr.Vertices
 digr.Visualize(emphasizeOutConnections = 5);;
+
+
+//let strs = ["a -> b, c, d"; "c -> b, e"; "1 -> 2, 3"; "2 -> a"; "4"]
+//let gr = DirectedGraph.FromStrings strs
+//gr.Visualize()
