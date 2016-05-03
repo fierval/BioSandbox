@@ -32,7 +32,7 @@ let connections len number =
 let graphGen = connections 4 1000
 let sw = Stopwatch()
 sw.Start()
-let graph = graphGen.Sample(5, 1000) |> List.distinctBy fst |> List.map (fun (v, c) -> v + " -> " + c)
+let graph = graphGen.Sample(8, 1000) |> List.distinctBy fst |> List.map (fun (v, c) -> v + " -> " + c)
 sw.Stop()
 
 printfn "Took %A to generate a graph of %d rows" sw.Elapsed graph.Length
@@ -40,7 +40,7 @@ open Graphs
 
 let digr = DirectedGraph.FromStrings graph
 printfn "The graph has %d vertices" digr.Vertices
-digr.Visualize(emphasizeOutConnections = 5);;
+digr.Visualize(emphasizeInConnections = 5, emphasizeOutConnections=8)
 
 
 let strs = ["a -> b, c, d"; "c -> b, e"; "1 -> 2, 3"; "2 -> a"; "4"]

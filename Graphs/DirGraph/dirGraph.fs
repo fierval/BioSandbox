@@ -151,15 +151,53 @@ module DirectedGraph =
             let inConMin = defaultArg emphasizeInConnections 0
             
             let self = this.AsEnumerable
-            
-            let coloring =
-                if outConMin = 0 && inConMin = 0 then String.Empty
-                else
-                    self
-                    |> Seq.filter (fun (_, con) -> con.Length >= outConMin)
-                    |> Seq.map (fun (v, _) -> String.Format("{0} [style=filled, color=green];", v))
-                    |> Seq.reduce (+)
+            let selfRev = this.Reverse.AsEnumerable
 
+            let toColor (c : string) (vertices : seq<string>) =
+                if vertices |> Seq.isEmpty then "" else
+                let formatstr = 
+                    let f = "{0} [style=filled, color={1}"
+                    if c = "blue" then f + ", fontcolor=white]" else f + "]"
+                vertices
+                |> Seq.map (fun v -> String.Format(formatstr, v, c))
+                |> Seq.reduce (+)
+                
+
+            let coloring in' out =
+                if in' = 0 && out = 0 then "", "", ""
+                else
+                    let outVertices =
+                        if out = 0 || (in' > 0 && in' <= out) then ""
+                        else                                 
+                            self
+                            |> Seq.filter (fun (_, con) -> con.Length >= out && (in' = 0 || con.Length < in'))
+                            |> Seq.map fst
+                            |> toColor "green"
+
+                    let inVertices =
+                        if in' = 0 || (out > 0 && out <= in') then "" else
+                            selfRev
+                            |> Seq.filter (fun (_, con) -> con.Length >= in' && (out = 0 || con.Length < out))
+                            |> Seq.map fst
+                            |> toColor "yellow"
+
+                    let outInVertices =
+                        if in' <> 0 && out <> 0 then
+                            query {
+                                for (vertex, conn) in self do
+                                join (revVertex, revConn) in selfRev
+                                    on (vertex = revVertex)
+                                select (vertex, conn.Length, revConn.Length)
+                            }
+                            |> Seq.filter (fun (v, o, i) -> o >= out && i >= in')
+                            |> Seq.map (fun (v, _, _) -> v)
+                            |> toColor "blue"
+                        else ""
+
+                    outVertices, inVertices, outInVertices                    
+
+            let colorOut, colorIn, colorBoth = coloring inConMin outConMin
+            
             let visualizable = 
                 self 
                 |> Seq.map 
@@ -170,7 +208,7 @@ module DirectedGraph =
                         |> Array.map (fun s -> v + " -> " + s)
                         |> Array.reduce (fun acc e -> acc + "; " + e))
                 |> Seq.reduce (fun acc e -> acc + "; " + e)
-                |> fun v -> "digraph {" + coloring + v + "}"
+                |> fun v -> "digraph {" + colorOut + colorIn + colorBoth + v + "}"
 
             createGraph visualizable None
 
