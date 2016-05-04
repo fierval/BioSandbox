@@ -164,27 +164,20 @@ module DirectedGraph =
                 
 
             let coloring in' out =
-                if in' = 0 && out = 0 then "", "", ""
-                else
-                    let outVertices =
-                        if out = 0  then Seq.empty
-                        else                                 
-                            self
-                            |> Seq.filter (fun (_, con) -> con.Length >= out)
-                            |> Seq.map fst
+                let bottomOutgoing (graphSeq : seq<string * string []>) bottom = 
+                    if bottom = 0 then Seq.empty
+                    else
+                        graphSeq
+                        |> Seq.filter (fun (_, con) -> con.Length >= bottom)
+                        |> Seq.map fst
 
-                    let inVertices =
-                        if in' = 0 then Seq.empty
-                        else
-                            selfRev
-                            |> Seq.filter (fun (_, con) -> con.Length >= in' )
-                            |> Seq.map fst
+                let outVertices = bottomOutgoing self out
+                let inVertices = bottomOutgoing selfRev in'
+                let outInVertices = inVertices.Intersect outVertices
 
-                    let outInVertices = inVertices.Intersect outVertices
-
-                    outVertices.Except outInVertices |> toColor "green",
-                    inVertices.Except outInVertices |> toColor "yellow",
-                    outInVertices |> toColor "blue"                   
+                outVertices.Except outInVertices |> toColor "green",
+                inVertices.Except outInVertices |> toColor "yellow",
+                outInVertices |> toColor "blue"                   
 
             let colorOut, colorIn, colorBoth = coloring inConMin outConMin
             
