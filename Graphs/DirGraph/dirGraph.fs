@@ -167,34 +167,24 @@ module DirectedGraph =
                 if in' = 0 && out = 0 then "", "", ""
                 else
                     let outVertices =
-                        if out = 0 || (in' > 0 && in' <= out) then ""
+                        if out = 0  then Seq.empty
                         else                                 
                             self
-                            |> Seq.filter (fun (_, con) -> con.Length >= out && (in' = 0 || con.Length < in'))
+                            |> Seq.filter (fun (_, con) -> con.Length >= out)
                             |> Seq.map fst
-                            |> toColor "green"
 
                     let inVertices =
-                        if in' = 0 || (out > 0 && out <= in') then "" else
+                        if in' = 0 then Seq.empty
+                        else
                             selfRev
-                            |> Seq.filter (fun (_, con) -> con.Length >= in' && (out = 0 || con.Length < out))
+                            |> Seq.filter (fun (_, con) -> con.Length >= in' )
                             |> Seq.map fst
-                            |> toColor "yellow"
 
-                    let outInVertices =
-                        if in' <> 0 && out <> 0 then
-                            query {
-                                for (vertex, conn) in self do
-                                join (revVertex, revConn) in selfRev
-                                    on (vertex = revVertex)
-                                select (vertex, conn.Length, revConn.Length)
-                            }
-                            |> Seq.filter (fun (v, o, i) -> o >= out && i >= in')
-                            |> Seq.map (fun (v, _, _) -> v)
-                            |> toColor "blue"
-                        else ""
+                    let outInVertices = inVertices.Intersect outVertices
 
-                    outVertices, inVertices, outInVertices                    
+                    outVertices.Except outInVertices |> toColor "green",
+                    inVertices.Except outInVertices |> toColor "yellow",
+                    outInVertices |> toColor "blue"                   
 
             let colorOut, colorIn, colorBoth = coloring inConMin outConMin
             
