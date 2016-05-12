@@ -5,6 +5,7 @@ open System.IO
 open System
 open DrawGraph
 open System.Linq
+open Alea.CUDA
 
 #nowarn "25"
 
@@ -22,7 +23,7 @@ module DirectedGraph =
 
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
-        let mutable nnz = rowIndex.[rowIndex.Length - 1]
+        let nEdges = rowIndex.[rowIndex.Length - 1]
         
         let ordinalToNames () =
             let res : string [] = Array.zeroCreate verticesNameToOrdinal.Count
@@ -31,7 +32,6 @@ module DirectedGraph =
 
             res
 
-        let rowSize = nVertex
         let verticesNameToOrdinal = verticesNameToOrdinal
         let verticesOrdinalToNames = ordinalToNames()
 
@@ -45,6 +45,15 @@ module DirectedGraph =
 
         let asOrdinalsEnumerable () =
             Seq.init nVertex (fun i -> i, getVertexConnections i)
+
+        let hasCuda = 
+            lazy (
+                try
+                    Device.Default.Name |> ignore
+                    true
+                with
+                _ ->    false
+            )
 
         let reverse =
             lazy (

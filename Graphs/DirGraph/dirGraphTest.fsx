@@ -32,7 +32,7 @@ let connections len number =
 let graphGen = connections 4 1000
 let sw = Stopwatch()
 sw.Start()
-let graph = graphGen.Sample(8, 1000) |> List.distinctBy fst |> List.map (fun (v, c) -> v + " -> " + c)
+let graph = graphGen.Sample(8, 3000) |> List.distinctBy fst |> List.map (fun (v, c) -> v + " -> " + c)
 sw.Stop()
 
 printfn "Took %A to generate a graph of %d rows" sw.Elapsed graph.Length
