@@ -2,6 +2,8 @@
 // for more guidance on F# programming.
 
 #r @"..\..\packages\FsCheck.2.4.0\lib\net45\FsCheck.dll"
+#r @"..\..\packages\Alea.CUDA.2.2.0.3307\lib\net40\Alea.CUDA.dll"
+#r @"..\..\packages\Alea.CUDA.Unbound.2.2.0.3307\lib\net40\Alea.CUDA.Unbound.dll"
 #r @"C:\Git\BioSandbox\Graphs\DrawGraph\bin\Debug\DrawGraph.dll"
 
 #load "dirGraph.fs"
