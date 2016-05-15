@@ -9,9 +9,17 @@ open Alea.CUDA
 
 #nowarn "25"
 
-[<AutoOpen>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module DirectedGraph =
+
+    let internal hasCuda = 
+        lazy (
+            try
+                Device.Default.Name |> ignore
+                true
+            with
+            _ ->    false
+        )
 
     /// <summary>
     /// Instantiate a directed graph. Need number of vertices
@@ -24,7 +32,11 @@ module DirectedGraph =
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
         let nEdges = rowIndex.[rowIndex.Length - 1]
-        
+        let nVertex = nVertex
+
+        do
+            if colIndex.Length <> nVertex then failwith "Inconsisten data. Edges <> vertices"
+
         let ordinalToNames () =
             let res : string [] = Array.zeroCreate verticesNameToOrdinal.Count
             verticesNameToOrdinal 
@@ -45,15 +57,6 @@ module DirectedGraph =
 
         let asOrdinalsEnumerable () =
             Seq.init nVertex (fun i -> i, getVertexConnections i)
-
-        let hasCuda = 
-            lazy (
-                try
-                    Device.Default.Name |> ignore
-                    true
-                with
-                _ ->    false
-            )
 
         let reverse =
             lazy (
@@ -86,7 +89,6 @@ module DirectedGraph =
 
             let rowIndexRaw = List<int>()
             let colIndex = List<int>()
-            let vertices = List<string>()            
             let nameToOrdinal = Dictionary<string, int>() // vertices and the index to which they correspond
 
             let addVertex (line : string) =
@@ -150,6 +152,16 @@ module DirectedGraph =
         member this.RowIndex = rowIndex
         member this.ColIndex = colIndex
         
+        /// <summary>
+        /// 0 -> 1 -> 2 -> 3 -> ... -> n -> 0
+        /// </summary>
+        /// <param name="n">Index of the last vertex</param>
+        static member GenerateRandomLoop n =
+            let dict = [0..n].ToDictionary((fun s -> s.ToString()), id)
+            let rowIndex = [0..n + 1]
+            let colIndex = [1..n] @ [0]
+            DirectedGraph(n + 1, rowIndex, colIndex, dict)
+
         /// <summary>
         /// Visualize the graph. Should in/out connections be emphasized
         /// </summary>

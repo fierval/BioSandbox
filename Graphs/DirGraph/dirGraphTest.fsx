@@ -3,6 +3,11 @@
 
 #r @"..\..\packages\FsCheck.2.4.0\lib\net45\FsCheck.dll"
 #r @"C:\Git\BioSandbox\Graphs\DrawGraph\bin\Debug\DrawGraph.dll"
+#I @"..\..\packages\Alea.CUDA.2.2.0.3307\lib\net40"
+#I @"..\..\packages\Alea.CUDA.Unbound.2.2.0.3307\lib\net40"
+
+#r @"Alea.CUDA"
+#r @"Alea.CUDA.Unbound"
 
 #load "dirGraph.fs"
 open Graphs
@@ -10,7 +15,7 @@ open FsCheck
 open System
 open System.Text.RegularExpressions
 open System.Diagnostics
-
+open DirectedGraph
 
 //let nucl = Gen.oneof [gen {return 'A'}; gen {return 'C'}; gen {return 'G'}; gen {return 'T'}]
 let nucl = Gen.choose(int 'A', int 'Z') |> Gen.map char
@@ -42,7 +47,5 @@ let digr = DirectedGraph.FromStrings graph
 printfn "The graph has %d vertices" digr.Vertices
 digr.Visualize(emphasizeInConnections = 5, emphasizeOutConnections=8)
 
-
-let strs = ["a -> b, c, d"; "c -> b, e"; "1 -> 2, 3"; "2 -> a"; "4"]
-let gr = DirectedGraph.FromStrings strs
-let grRev = gr.Reverse
+let circ = DirectedGraph.GenerateRandomLoop 5
+circ.Visualize()
