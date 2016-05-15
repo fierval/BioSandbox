@@ -27,15 +27,12 @@ module DirectedGraph =
     /// v -> a, b, c, d - v - unique vertex name for each line of the file. a, b, c, d - names of vertices it connects to.
     /// </summary>
     [<StructuredFormatDisplay("{AsEnumerable}")>]
-    type DirectedGraph (nVertex : int, rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<string, int>) = 
+    type DirectedGraph (rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<string, int>) = 
 
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
         let nEdges = rowIndex.[rowIndex.Length - 1]
-        let nVertex = nVertex
-
-        do
-            if colIndex.Length <> nVertex then failwith "Inconsisten data. Edges <> vertices"
+        let nVertex = verticesNameToOrdinal.Count
 
         let ordinalToNames () =
             let res : string [] = Array.zeroCreate verticesNameToOrdinal.Count
@@ -78,13 +75,15 @@ module DirectedGraph =
                 let revRowIndex = allRows |> Seq.scan (fun st (key, v) -> st + v.Length) 0
                 let revColIndex = allRows |> Seq.collect snd
 
-                DirectedGraph(nVertex, revRowIndex, revColIndex, verticesNameToOrdinal)            
+                DirectedGraph(revRowIndex, revColIndex, verticesNameToOrdinal)            
             )
                         
         /// <summary>
         /// Create the graph from an array of strings
         /// </summary>
-        /// <param name="lines"></param>
+        /// <param name="lines">
+        /// array of strings formatted: out_vertex -> in_v1, in_v2, in_v3,..
+        ///</param>
         static member FromStrings (lines : string seq) =  
 
             let rowIndexRaw = List<int>()
@@ -128,7 +127,7 @@ module DirectedGraph =
 
             lines |> Seq.iter addVertex
 
-            DirectedGraph(rowIndexRaw.Count, rowIndexRaw |> Seq.scan (+) 0, colIndex, nameToOrdinal)
+            DirectedGraph(rowIndexRaw |> Seq.scan (+) 0, colIndex, nameToOrdinal)
 
 
         /// <summary>
@@ -160,7 +159,7 @@ module DirectedGraph =
             let dict = [0..n].ToDictionary((fun s -> s.ToString()), id)
             let rowIndex = [0..n + 1]
             let colIndex = [1..n] @ [0]
-            DirectedGraph(n + 1, rowIndex, colIndex, dict)
+            DirectedGraph(rowIndex, colIndex, dict)
 
         /// <summary>
         /// Visualize the graph. Should in/out connections be emphasized
@@ -216,4 +215,33 @@ module DirectedGraph =
 
             createGraph visualizable None
 
+        override this.Equals g2 =
+            match g2 with
+            | :? DirectedGraph as g ->
+                if g.Vertices = this.Vertices then
+
+                    let grSort (gr : seq<string * string[]>) =
+                        gr |> Seq.sortBy fst
+
+                    let gseq = g.AsEnumerable |> grSort
+                    let thisSeq = this.AsEnumerable |> grSort
+
+                    let getKeys (gr : seq<string*string[]>) =
+                        gr |> Seq.map fst |> Seq.toArray
+                
+                    let getVals (gr : seq<string * string[]>) =
+                        gr |> Seq.map (fun (a, b) -> b |> Array.sort) |> Seq.toArray
+
+                    let valuesEq (gr : seq<string * string []>) (gr1 : seq<string * string []>) =
+                        not (Seq.zip (getVals gr) (getVals gr1) |> Seq.exists (fun (a, b) -> a <> b))
+
+                    let keysEq (gr : seq<string * string []>) (gr1 : seq<string * string []>) =
+                        (getKeys gr) = (getKeys gr1)
+
+                    keysEq thisSeq gseq && valuesEq thisSeq gseq
+                else false
+               
+            | _ -> false
             
+        override this.GetHashCode() = this.AsEnumerable.GetHashCode() 
+                    

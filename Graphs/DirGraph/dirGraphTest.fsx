@@ -23,31 +23,42 @@ open DirectedGraph
 let nucl = Gen.choose(int 'A', int 'Z') |> Gen.map char
 
 let genVertex len =  Gen.arrayOfLength len nucl |> Gen.map (fun c -> String(c))
-let vertices len number = Gen.arrayOfLength number (genVertex len) |> Gen.map (fun l -> l |> Array.distinct)
+let vertices len number = Gen.arrayOfLength number (genVertex len) |> Gen.map Array.distinct
 
-let connections len number =
+let graphGen len number =
     let verts = vertices len number
     let rnd = Random(int DateTime.UtcNow.Ticks)
     let pickFrom = verts |> Gen.map (fun lst -> lst.[rnd.Next(lst.Length)])
     let pickTo = Gen.sized (fun n -> Gen.listOfLength (if n = 0 then 1 else n) pickFrom)
 
-    Gen.map2 
-        (fun from to' -> 
-            from,
-                (to' |> Seq.reduce (fun acc v -> acc + ", " + v))) pickFrom pickTo
-
-let graphGen = connections 4 1000
+    Gen.sized
+    <| 
+    (fun n ->
+        Gen.map2 
+            (fun from to' -> 
+                from, (to' |> Seq.reduce (fun acc v -> acc + ", " + v))) pickFrom pickTo
+        |>
+        Gen.arrayOfLength (if n = 0 then 1 else n)
+        |> Gen.map (Array.distinctBy fst)
+        |> Gen.map (fun arr ->  arr |> Array.map (fun (a, b) -> a + " -> " + b))
+    )
+    |> Gen.map DirectedGraph.FromStrings
+    
 let sw = Stopwatch()
 sw.Start()
-let graph = graphGen.Sample(8, 3000) |> List.distinctBy fst |> List.map (fun (v, c) -> v + " -> " + c)
+let digr = graphGen 3 1000 |> fun g -> g.Sample(70, 1) |> List.head
 sw.Stop()
 
-printfn "Took %A to generate a graph of %d rows" sw.Elapsed graph.Length
-open Graphs
+printfn "Took %A to generate a graph of %d vertices" sw.Elapsed digr.Vertices
 
-let digr = DirectedGraph.FromStrings graph
-printfn "The graph has %d vertices" digr.Vertices
-digr.Visualize(emphasizeInConnections = 5, emphasizeOutConnections=8)
+digr.Visualize(emphasizeInConnections = 3, emphasizeOutConnections=5)
 
-let circ = DirectedGraph.GenerateRandomLoop 5
-circ.Visualize()
+let strs = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
+let strs1 = ["a -> c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
+
+let gr = DirectedGraph.FromStrings strs
+let gr1 = DirectedGraph.FromStrings strs1
+
+printfn "%b" (gr = gr1)
+
+gr.Visualize()
