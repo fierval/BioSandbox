@@ -43,15 +43,16 @@ let graphGen len number =
         |> Gen.map (fun arr ->  arr |> Array.map (fun (a, b) -> a + " -> " + b))
     )
     |> Gen.map DirectedGraph.FromStrings
-    
-let sw = Stopwatch()
-sw.Start()
-let digr = graphGen 3 1000 |> fun g -> g.Sample(70, 1) |> List.head
-sw.Stop()
 
-printfn "Took %A to generate a graph of %d vertices" sw.Elapsed digr.Vertices
 
-digr.Visualize(emphasizeInConnections = 3, emphasizeOutConnections=5)
+type Marker =
+    static member digr = graphGen 3 500 |> Arb.fromGen
+    static member ``Reverse of the Reverse equals itself`` (gr : DirectedGraph) =
+        gr.Reverse.Reverse = gr
+
+Arb.registerByType(typeof<Marker>)
+Check.QuickAll(typeof<Marker>)
+
 
 let strs = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
 let strs1 = ["a -> c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
