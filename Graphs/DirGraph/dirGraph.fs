@@ -21,6 +21,8 @@ module DirectedGraph =
             _ ->    false
         )
 
+    let getWorker () = if hasCuda.Force() then Some(Device.Default) else None
+
     /// <summary>
     /// Instantiate a directed graph. Need number of vertices
     /// Format of the file:
@@ -214,6 +216,8 @@ module DirectedGraph =
                 |> fun v -> "digraph {" + colorOut + colorIn + colorBoth + v + "}"
 
             createGraph visualizable None
+
+        member private this.Worker = getWorker()
 
         override this.Equals g2 =
             match g2 with
