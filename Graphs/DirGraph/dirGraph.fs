@@ -214,11 +214,11 @@ module DirectedGraph =
         /// <summary>
         /// Visualize the graph. Should in/out connections be emphasized
         /// </summary>
-        /// <param name="emphasizeInConnections">Optional. If present - should be the minimum number of inbound connections which would select the vertex for coloring.</param>
-        /// <param name="emphasizeOutConnections">Optional. If present - should be the minimum number of outbound connections which would select the vertex for coloring.</param>
-        member this.Visualize(?emphasizeInConnections, ?emphasizeOutConnections) =
-            let outConMin = defaultArg emphasizeOutConnections 0
-            let inConMin = defaultArg emphasizeInConnections 0
+        /// <param name="into">Optional. If present - should be the minimum number of inbound connections which would select the vertex for coloring.</param>
+        /// <param name="out">Optional. If present - should be the minimum number of outbound connections which would select the vertex for coloring.</param>
+        member this.Visualize(?into, ?out) =
+            let outConMin = defaultArg out 0
+            let inConMin = defaultArg into 0
             
             let self = this.AsEnumerable
             let selfRev = this.Reverse.AsEnumerable

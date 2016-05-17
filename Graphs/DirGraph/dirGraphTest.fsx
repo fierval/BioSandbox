@@ -30,4 +30,4 @@ gr.Visualize()
 
 let dirg = DirectedGraph.GenerateEulerGraph 100 5
 
-dirg.Visualize(emphasizeInConnections = 5, emphasizeOutConnections = 5)
+dirg.Visualize(into = 5, out = 5)
