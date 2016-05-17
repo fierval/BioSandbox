@@ -29,11 +29,12 @@ module DirectedGraph =
     /// v -> a, b, c, d - v - unique vertex name for each line of the file. a, b, c, d - names of vertices it connects to.
     /// </summary>
     [<StructuredFormatDisplay("{AsEnumerable}")>]
-    type DirectedGraph (rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<string, int>) = 
+    type DirectedGraph (rowIndex : int seq, colIndex : int seq, ?verticesNameToOrdinal : IDictionary<string, int>) = 
 
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
         let nEdges = rowIndex.[rowIndex.Length - 1]
+        let verticesNameToOrdinal = defaultArg verticesNameToOrdinal ([0..rowIndex.Length - 1].ToDictionary((fun s -> s.ToString()), id) :> IDictionary<string, int>) 
         let nVertex = verticesNameToOrdinal.Count
 
         let ordinalToNames () =
@@ -43,7 +44,6 @@ module DirectedGraph =
 
             res
 
-        let verticesNameToOrdinal = verticesNameToOrdinal
         let verticesOrdinalToNames = ordinalToNames()
 
         let nameFromOrdinal = fun ordinal -> verticesOrdinalToNames.[ordinal]
@@ -79,7 +79,7 @@ module DirectedGraph =
 
                 DirectedGraph(revRowIndex, revColIndex, verticesNameToOrdinal)            
             )
-                        
+        
         /// <summary>
         /// Create the graph from an array of strings
         /// </summary>
@@ -150,19 +150,52 @@ module DirectedGraph =
         member this.AsEnumerable = Seq.init nVertex (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
 
         member this.Reverse = reverse.Force()
-        member this.RowIndex = rowIndex
-        member this.ColIndex = colIndex
+        member private this.RowIndex = rowIndex
+        member private this.ColIndex = colIndex
         
         /// <summary>
         /// 0 -> 1 -> 2 -> 3 -> ... -> n -> 0
         /// </summary>
         /// <param name="n">Index of the last vertex</param>
         static member GenerateRandomLoop n =
-            let dict = [0..n].ToDictionary((fun s -> s.ToString()), id)
             let rowIndex = [0..n + 1]
             let colIndex = [1..n] @ [0]
-            DirectedGraph(rowIndex, colIndex, dict)
-
+            DirectedGraph(rowIndex, colIndex)
+        
+        /// <summary>
+        /// Generates a Eulerian graph
+        /// </summary>
+        /// <param name="n"> number of vertices </param>
+        /// <param name="k"> max number of connections in one direction</param>
+        static member GenerateEulerGraph n k =
+            let rnd = Random(int DateTime.Now.Ticks)
+            let connections = Array.init n (fun i -> rnd.Next(1, k + 1))
+            let connectionsReverse = Array.zeroCreate n
+            connections.CopyTo(connectionsReverse, 0)
+            let rowIndex = [0].ToList()
+            let colIndex = List<int>()
+            for i = 0 to n - 1 do
+                rowIndex.Add(0)
+                rowIndex.[i + 1] <- rowIndex.[i] + connections.[i]
+                
+                // scan vertices starting from vertex i and grab the next available vertex to connect to while it is possible 
+                // connectionsReverse keeps track of how many more vertices can be connected to the current one. At the end, all
+                // of its elements should be eq to 0
+                let cols = 
+                    (1, 0)
+                    |> Seq.unfold 
+                        (fun (k, st) -> 
+                            let idx = (i + k) % n
+                            if st = connections.[i] then None 
+                            elif connectionsReverse.[idx] = 0 
+                            then Some(-1, (st, k + 1))
+                            else
+                                connectionsReverse.[idx] <- connectionsReverse.[idx] - 1
+                                Some(connectionsReverse.[idx], (st + 1, k + 1)))
+                    |> Seq.filter(fun x -> x >= 0)
+                colIndex.AddRange cols    
+            DirectedGraph(rowIndex, colIndex)
+                            
         /// <summary>
         /// Visualize the graph. Should in/out connections be emphasized
         /// </summary>
