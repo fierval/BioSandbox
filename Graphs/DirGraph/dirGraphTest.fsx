@@ -51,15 +51,17 @@ type Marker =
         gr.Reverse.Reverse = gr
 
 Arb.registerByType(typeof<Marker>)
-Check.QuickAll(typeof<Marker>)
+//Check.QuickAll(typeof<Marker>)
 
 
-let strs = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
-let strs1 = ["a -> c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
+//let strs = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
+//let strs1 = ["a -> c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
+//
+//let gr = DirectedGraph.FromStrings strs
+//let gr1 = DirectedGraph.FromStrings strs1
+//
+//printfn "%b" (gr = gr1)
+//
+//gr.Visualize()
 
-let gr = DirectedGraph.FromStrings strs
-let gr1 = DirectedGraph.FromStrings strs1
-
-printfn "%b" (gr = gr1)
-
-gr.Visualize()
+let dirg = DirectedGraph.GenerateEulerGraph 10 4

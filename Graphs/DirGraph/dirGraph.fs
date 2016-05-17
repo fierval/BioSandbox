@@ -34,7 +34,7 @@ module DirectedGraph =
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
         let nEdges = rowIndex.[rowIndex.Length - 1]
-        let verticesNameToOrdinal = defaultArg verticesNameToOrdinal ([0..rowIndex.Length - 1].ToDictionary((fun s -> s.ToString()), id) :> IDictionary<string, int>) 
+        let verticesNameToOrdinal = defaultArg verticesNameToOrdinal ([0..rowIndex.Length - 2].ToDictionary((fun s -> s.ToString()), id) :> IDictionary<string, int>)
         let nVertex = verticesNameToOrdinal.Count
 
         let ordinalToNames () =
@@ -157,9 +157,9 @@ module DirectedGraph =
         /// 0 -> 1 -> 2 -> 3 -> ... -> n -> 0
         /// </summary>
         /// <param name="n">Index of the last vertex</param>
-        static member GenerateRandomLoop n =
-            let rowIndex = [0..n + 1]
-            let colIndex = [1..n] @ [0]
+        static member GenerateSimpleLoop n =
+            let rowIndex = [0..n]
+            let colIndex = [1..n - 1] @ [0]
             DirectedGraph(rowIndex, colIndex)
         
         /// <summary>
@@ -182,16 +182,16 @@ module DirectedGraph =
                 // connectionsReverse keeps track of how many more vertices can be connected to the current one. At the end, all
                 // of its elements should be eq to 0
                 let cols = 
-                    (1, 0)
+                    (0, 1)
                     |> Seq.unfold 
-                        (fun (k, st) -> 
+                        (fun (st, k) -> 
                             let idx = (i + k) % n
                             if st = connections.[i] then None 
                             elif connectionsReverse.[idx] = 0 
                             then Some(-1, (st, k + 1))
                             else
                                 connectionsReverse.[idx] <- connectionsReverse.[idx] - 1
-                                Some(connectionsReverse.[idx], (st + 1, k + 1)))
+                                Some(idx, (st + 1, k + 1)))
                     |> Seq.filter(fun x -> x >= 0)
                 colIndex.AddRange cols    
             DirectedGraph(rowIndex, colIndex)
