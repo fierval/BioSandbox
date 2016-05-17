@@ -53,8 +53,9 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="dirGraph.fs" />
-    <None Include="dirGraphTest.fsx" />
+    <None Include="dirGraphPropertyTest.fsx" />
     <Content Include="packages.config" />
+    <None Include="dirGraphTest.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">
