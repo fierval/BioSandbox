@@ -79,7 +79,7 @@ module DirectedGraph =
 
                 DirectedGraph(revRowIndex, revColIndex, verticesNameToOrdinal)            
             )
-
+        
         /// <summary>
         /// Create the graph from an array of strings
         /// </summary>
@@ -153,6 +153,11 @@ module DirectedGraph =
         member private this.RowIndex = rowIndex
         member private this.ColIndex = colIndex
 
+        member private this.GetConnectedVertices ordinal = getVertexConnections ordinal
+        member private this.GetConnectedToMe ordinal = this.Reverse.GetConnectedVertices ordinal
+        member private this.GetAllConnections ordinal =
+            this.GetConnectedVertices ordinal |> fun g -> g.Union (this.GetConnectedToMe ordinal)
+
         /// <summary>
         /// Is this a Eulerian graph: i.e., in-degree of all vertices = out-degree
         /// </summary>
@@ -194,7 +199,7 @@ module DirectedGraph =
                 rowIndex.[i + 1] <- rowIndex.[i] + connections.[i]
                 
                 // scan vertices starting from vertex i and grab the next available vertex to connect to while it is possible 
-                // connectionsReverse keeps track of how many more vertices can be connected to the current one. At the end, all
+                // connectionsReverse keeps track of each vertex ability to serve as an inbound vertex. At the end, all
                 // of its elements should be eq to 0
                 let cols = 
                     (0, 1)
@@ -210,7 +215,36 @@ module DirectedGraph =
                     |> Seq.filter(fun x -> x >= 0)
                 colIndex.AddRange cols    
             DirectedGraph(rowIndex, colIndex)
-                            
+        
+        /// <summary>
+        /// Finds all connected components and returns them as a list of vertex sets.
+        /// </summary>
+        member this.FindConnectedComponents () =
+            let rnd = Random()
+            let mutable vertices = Enumerable.Range(0, this.Vertices)
+            
+            [
+                while vertices.Count() > 0 do
+                    let idx = rnd.Next(vertices.Count())
+                    
+                    let connected = 
+                        Array.unfold 
+                            (fun (prevVertices, (visited : HashSet<int>), prevVisited) -> 
+                                let visitVerts = 
+                                    prevVertices 
+                                    |> Array.map (this.GetAllConnections >> Seq.toArray) 
+                                    |> Array.concat |> Array.distinct
+                                visitVerts |> Array.iter (visited.Add >> ignore)
+                                if visited.Count = prevVisited then None
+                                else Some(visitVerts, (visitVerts, visited, visited.Count))
+                            ) ([|idx|], HashSet<int>([idx]), 0) // TODO: Horribly inefficient: we already have the result and we throw it away...
+                        |> Array.concat
+                        |> Array.distinct
+
+                    vertices <- vertices.Except connected
+                    yield connected |> Seq.map (fun i -> verticesOrdinalToNames.[i]) |> HashSet<string>
+            ]
+                                                    
         /// <summary>
         /// Visualize the graph. Should in/out connections be emphasized
         /// </summary>

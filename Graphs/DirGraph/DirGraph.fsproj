@@ -54,8 +54,8 @@
   <ItemGroup>
     <Compile Include="dirGraph.fs" />
     <None Include="dirGraphPropertyTest.fsx" />
-    <Content Include="packages.config" />
     <None Include="dirGraphTest.fsx" />
+    <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">
