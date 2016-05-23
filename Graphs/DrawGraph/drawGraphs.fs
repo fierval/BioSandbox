@@ -36,3 +36,5 @@ let createGraph (graph : string) (graphVizPath : string option) =
     finally
         if File.Exists graphFile then File.Delete graphFile
         if File.Exists (graphFile + ".png") then File.Delete (graphFile + ".png")
+
+let createVisual graph = createGraph graph None

@@ -1,4 +1,5 @@
 ﻿namespace Graphs
+
 open System.Collections.Generic
 open System.Linq
 open System.IO
@@ -9,6 +10,7 @@ open Alea.CUDA
 
 #nowarn "25"
 
+[<AutoOpen>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module DirectedGraph =
 
@@ -90,6 +92,7 @@ module DirectedGraph =
 
             let rowIndexRaw = List<int>()
             let colIndex = List<int>()
+
             let nameToOrdinal = Dictionary<string, int>() // vertices and the index to which they correspond
 
             let addVertex (line : string) =
@@ -99,7 +102,8 @@ module DirectedGraph =
                         line.Trim().Split([|"->"|], 2, StringSplitOptions.RemoveEmptyEntries) |> fun [|a; b|] -> a.Trim(), b.Trim()
                     else line.Trim(), ""
 
-                if not (nameToOrdinal.ContainsKey vertex) then 
+                let newVertex = not (nameToOrdinal.ContainsKey vertex)
+                if newVertex then 
                     nameToOrdinal.Add(vertex, nameToOrdinal.Keys.Count)                    
                     rowIndexRaw.Add 0
 
@@ -110,6 +114,7 @@ module DirectedGraph =
                         |> Array.map (fun e -> e.Trim())
                     else [||]
 
+                let ordinal = nameToOrdinal.[vertex]
 
                 // store all the vertices we have not seen before
                 let newVertices = connectedVertices.Except nameToOrdinal.Keys |> Seq.toArray
@@ -117,15 +122,22 @@ module DirectedGraph =
                 |> Seq.iter (fun v -> nameToOrdinal.Add(v, nameToOrdinal.Keys.Count))
                 
                 // extend the new rows
-                rowIndexRaw.AddRange (Array.zeroCreate newVertices.Length)
+                let newVerticesZeroes = Array.zeroCreate newVertices.Length
+                rowIndexRaw.AddRange newVerticesZeroes
 
                 // for now we will store the number of vertices in the row index
                 // entry for the given row. We will need to scan it and update its values later
                 rowIndexRaw.[nameToOrdinal.[vertex]] <- connectedVertices.Length
 
-                connectedVertices
-                |> Seq.map (fun v -> nameToOrdinal.[v])
-                |> colIndex.AddRange
+                let connectedOrdinals = 
+                    connectedVertices
+                    |> Seq.map (fun v -> nameToOrdinal.[v])
+
+                // if we are inserting a "retoractive" row, we need to know where we are inserting it!
+                if newVertex then colIndex.AddRange connectedOrdinals
+                else
+                    let rowIndexCur = rowIndexRaw |> Seq.scan (+) 0 |> Seq.toList
+                    colIndex.InsertRange(rowIndexCur.[ordinal], connectedOrdinals)
 
             lines |> Seq.iter addVertex
 
@@ -148,6 +160,7 @@ module DirectedGraph =
             with get vertex = ordinalFromName vertex |> getVertexConnections |> Array.map nameFromOrdinal
 
         member this.AsEnumerable = Seq.init nVertex (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
+        member this.Subgraph (vertices : string list) = Seq.init (vertices.Count()) (fun i -> vertices.[i], this.[vertices.[i]])
 
         member this.Reverse = reverse.Force()
         member private this.RowIndex = rowIndex
@@ -229,76 +242,23 @@ module DirectedGraph =
                     
                     let connected = 
                         Array.unfold 
-                            (fun (prevVertices, (visited : HashSet<int>), prevVisited) -> 
+                            (fun (prevVertices : HashSet<int>, visited) -> 
                                 let visitVerts = 
-                                    prevVertices 
+                                    visited 
                                     |> Array.map (this.GetAllConnections >> Seq.toArray) 
                                     |> Array.concat |> Array.distinct
-                                visitVerts |> Array.iter (visited.Add >> ignore)
-                                if visited.Count = prevVisited then None
-                                else Some(visitVerts, (visitVerts, visited, visited.Count))
-                            ) ([|idx|], HashSet<int>([idx]), 0) // TODO: Horribly inefficient: we already have the result and we throw it away...
-                        |> Array.concat
-                        |> Array.distinct
+                                let prevLen = prevVertices.Count                                        
+                                visitVerts |> Array.iter (prevVertices.Add >> ignore)
+                                if prevVertices.Count = prevLen then None
+                                else Some(prevVertices, (prevVertices, visited))
+                            ) (HashSet<int>([idx]), [|idx|]) 
+                        |> Array.take 1
+                        |> Array.exactlyOne
 
                     vertices <- vertices.Except connected
                     yield connected |> Seq.map (fun i -> verticesOrdinalToNames.[i]) |> HashSet<string>
             ]
                                                     
-        /// <summary>
-        /// Visualize the graph. Should in/out connections be emphasized
-        /// </summary>
-        /// <param name="into">Optional. If present - should be the minimum number of inbound connections which would select the vertex for coloring.</param>
-        /// <param name="out">Optional. If present - should be the minimum number of outbound connections which would select the vertex for coloring.</param>
-        member this.Visualize(?into, ?out) =
-            let outConMin = defaultArg out 0
-            let inConMin = defaultArg into 0
-            
-            let self = this.AsEnumerable
-            let selfRev = this.Reverse.AsEnumerable
-
-            let toColor (c : string) (vertices : seq<string>) =
-                if vertices |> Seq.isEmpty then "" else
-                let formatstr = 
-                    let f = "{0} [style=filled, color={1}"
-                    if c = "blue" then f + ", fontcolor=white]" else f + "]"
-                vertices
-                |> Seq.map (fun v -> String.Format(formatstr, v, c))
-                |> Seq.reduce (+)
-                
-
-            let coloring in' out =
-                let bottomOutgoing (graphSeq : seq<string * string []>) bottom = 
-                    if bottom = 0 then Seq.empty
-                    else
-                        graphSeq
-                        |> Seq.filter (fun (_, con) -> con.Length >= bottom)
-                        |> Seq.map fst
-
-                let outVertices = bottomOutgoing self out
-                let inVertices = bottomOutgoing selfRev in'
-                let outInVertices = inVertices.Intersect outVertices
-
-                outVertices.Except outInVertices |> toColor "green",
-                inVertices.Except outInVertices |> toColor "yellow",
-                outInVertices |> toColor "blue"                   
-
-            let colorOut, colorIn, colorBoth = coloring inConMin outConMin
-            
-            let visualizable = 
-                self 
-                |> Seq.map 
-                    (fun (v, c) -> 
-                        if c.Length = 0 then v
-                        else
-                        c 
-                        |> Array.map (fun s -> v + " -> " + s)
-                        |> Array.reduce (fun acc e -> acc + "; " + e))
-                |> Seq.reduce (fun acc e -> acc + "; " + e)
-                |> fun v -> "digraph {" + colorOut + colorIn + colorBoth + v + "}"
-
-            createGraph visualizable None
-
         member private this.Worker = getWorker()
 
         override this.Equals g2 =
