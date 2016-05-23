@@ -42,7 +42,7 @@ module Visualizer =
 
     // Create a "graph" or a "cluster" visualization based on clusterN parameter
     let internal visualizeSubgraph (subgraph : GraphSeq) (subgraphRev : GraphSeq) outConMin inConMin clusterN =
-        let graphOpen = if clusterN < 0 then "subgraph cluster_" + clusterN.ToString() + "{ color = red; " else "digraph {"
+        let graphOpen = if clusterN >= 0 then "subgraph cluster_" + clusterN.ToString() + "{ color = red; " else "digraph {"
         let graphClose = "}"
 
         let colorOut, colorIn, colorBoth = coloring subgraph subgraphRev inConMin outConMin
@@ -59,11 +59,11 @@ module Visualizer =
             |> Seq.reduce (fun acc e -> acc + "; " + e)
             |> fun v -> graphOpen + colorOut + colorIn + colorBoth + v + graphClose
 
-        createVisual visualizable
         visualizable
 
     let internal visualizeEntire subgraph subgraphRev outConMin inConMin = 
-        visualizeSubgraph subgraph subgraphRev outConMin inConMin  -1 |> ignore
+        visualizeSubgraph subgraph subgraphRev outConMin inConMin  -1 
+        |> createVisual
         
     let internal visualizeAll (graph : DirectedGraph) outConMin inConMin clusters = 
         let rev = graph.Reverse
@@ -86,7 +86,7 @@ module Visualizer =
                     visualizeSubgraph subgraph subgraphRev outConMin inConMin i
                 )
             |> List.reduce (+)
-            |> fun gr -> createVisual ("digraph { " + gr + "}") 
+            |> fun gr -> createVisualClusters ("digraph { " + gr + "}") 
                             
     type Visualizer () =
         /// <summary>
@@ -99,22 +99,4 @@ module Visualizer =
             let inConMin = defaultArg into 0
             let clusters = defaultArg clusters false
             
-            let self = graph.AsEnumerable
-            let selfRev = graph.Reverse.AsEnumerable
-            let connectedComponents = if clusters then graph.FindConnectedComponents() else []
-
-            let colorOut, colorIn, colorBoth = coloring self selfRev inConMin outConMin
-
-            let visualizable = 
-                self 
-                |> Seq.map 
-                    (fun (v, c) -> 
-                        if c.Length = 0 then v
-                        else
-                        c 
-                        |> Array.map (fun s -> v + " -> " + s)
-                        |> Array.reduce (fun acc e -> acc + "; " + e))
-                |> Seq.reduce (fun acc e -> acc + "; " + e)
-                |> fun v -> "digraph {" + colorOut + colorIn + colorBoth + v + "}"
-
-            createGraph visualizable None
+            visualizeAll graph outConMin inConMin clusters

@@ -171,6 +171,10 @@ module DirectedGraph =
         member private this.GetAllConnections ordinal =
             this.GetConnectedVertices ordinal |> fun g -> g.Union (this.GetConnectedToMe ordinal)
 
+        member this.Connected vertex = vertex |> ordinalFromName |> this.GetConnectedVertices |> Array.map nameFromOrdinal
+        member this.ConnectedToMe vertex = vertex |> ordinalFromName |> this.GetConnectedToMe |> Array.map nameFromOrdinal
+        member this.AllConnected vertex = vertex |> ordinalFromName |> this.GetAllConnections |> Seq.map nameFromOrdinal |> Seq.toArray
+
         /// <summary>
         /// Is this a Eulerian graph: i.e., in-degree of all vertices = out-degree
         /// </summary>
@@ -234,29 +238,30 @@ module DirectedGraph =
         /// </summary>
         member this.FindConnectedComponents () =
             let rnd = Random()
-            let mutable vertices = Enumerable.Range(0, this.Vertices)
+            let mutable vertices = Enumerable.Range(0, this.Vertices) |> Seq.toList
             
             [
                 while vertices.Count() > 0 do
-                    let idx = rnd.Next(vertices.Count())
+                    let idx = vertices.[rnd.Next(vertices.Count())]
                     
                     let connected = 
-                        Array.unfold 
+                        List.unfold 
                             (fun (prevVertices : HashSet<int>, visited) -> 
                                 let visitVerts = 
                                     visited 
                                     |> Array.map (this.GetAllConnections >> Seq.toArray) 
                                     |> Array.concat |> Array.distinct
+                                    |> fun a -> a.Except prevVertices |> Seq.toArray
                                 let prevLen = prevVertices.Count                                        
                                 visitVerts |> Array.iter (prevVertices.Add >> ignore)
                                 if prevVertices.Count = prevLen then None
-                                else Some(prevVertices, (prevVertices, visited))
+                                else Some(prevVertices, (prevVertices, visitVerts))
                             ) (HashSet<int>([idx]), [|idx|]) 
-                        |> Array.take 1
-                        |> Array.exactlyOne
+                        |> List.take 1
+                        |> List.exactlyOne
 
-                    vertices <- vertices.Except connected
-                    yield connected |> Seq.map (fun i -> verticesOrdinalToNames.[i]) |> HashSet<string>
+                    vertices <- vertices.Except connected |> Seq.toList
+                    yield connected |> Seq.map (fun i -> verticesOrdinalToNames.[i]) |> Seq.toList
             ]
                                                     
         member private this.Worker = getWorker()

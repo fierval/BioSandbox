@@ -7,7 +7,7 @@ open Emgu.CV
 open Emgu.CV.UI
 open Emgu.CV.CvEnum
 
-let createGraph (graph : string) (graphVizPath : string option) =
+let createGraph (graph : string) (processName : string) (graphVizPath : string option) =
     let workingDir = 
         match graphVizPath with
         | Some p -> p
@@ -16,25 +16,30 @@ let createGraph (graph : string) (graphVizPath : string option) =
     let graphFile = Path.GetTempFileName()
     File.WriteAllText(graphFile, graph)
 
-    let pi = ProcessStartInfo(Path.Combine(workingDir, "sfdp.exe"))
-    pi.CreateNoWindow <- true
-    pi.ErrorDialog <- false;
-    pi.UseShellExecute <- false;
-    pi.Arguments <- String.Format("-Tpng -O -Goverlap=prism {0}", graphFile)
-    pi.WorkingDirectory <- workingDir
-    try
-        let proc = new Process();
-        proc.StartInfo <- pi
-        proc.Start() |> ignore
+    match processName with
+    | procName when procName = "sfdp.exe" or procName = "dot.exe" ->
 
-        proc.WaitForExit()
-        if proc.ExitCode = 0 then
-            let mat = CvInvoke.Imread(graphFile + ".png", LoadImageType.AnyColor)
-            let viewer = new ImageViewer(mat)
-            viewer.Show()
-        else failwith "could not create image file"                  
-    finally
-        if File.Exists graphFile then File.Delete graphFile
-        if File.Exists (graphFile + ".png") then File.Delete (graphFile + ".png")
+        let pi = ProcessStartInfo(Path.Combine(workingDir, processName))
+        pi.CreateNoWindow <- true
+        pi.ErrorDialog <- false;
+        pi.UseShellExecute <- false;
+        pi.Arguments <- String.Format("-Tpng -O -Goverlap=prism {0}", graphFile)
+        pi.WorkingDirectory <- workingDir
+        try
+            let proc = new Process();
+            proc.StartInfo <- pi
+            proc.Start() |> ignore
 
-let createVisual graph = createGraph graph None
+            proc.WaitForExit()
+            if proc.ExitCode = 0 then
+                let mat = CvInvoke.Imread(graphFile + ".png", LoadImageType.AnyColor)
+                let viewer = new ImageViewer(mat)
+                viewer.Show()
+            else failwith "could not create image file"                  
+        finally
+            if File.Exists graphFile then File.Delete graphFile
+            if File.Exists (graphFile + ".png") then File.Delete (graphFile + ".png")
+    | _ -> failwith "Unknown graphing process"
+
+let createVisual graph = createGraph graph "sfdp.exe" None
+let createVisualClusters graph = createGraph graph "dot.exe" None

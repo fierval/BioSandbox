@@ -26,7 +26,7 @@ let gr1 = DirectedGraph.FromStrings strs1
 
 printfn "%b" (gr = gr1)
 
-Visualizer.Visualize(gr)
+Visualizer.Visualize(gr, clusters = true)
 
 let dirg = DirectedGraph.GenerateEulerGraph 100 5
 
@@ -36,3 +36,6 @@ let sparse = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"; "1 -> 2, 3"; "
 let grs = DirectedGraph.FromStrings sparse
 
 Visualizer.Visualize(grs)
+Visualizer.Visualize(grs.Reverse)
+
+Visualizer.Visualize(grs, clusters = true)
