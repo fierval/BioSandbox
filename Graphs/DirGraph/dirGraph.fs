@@ -76,16 +76,12 @@ module DirectedGraph =
                     |> Seq.sortBy fst
                     
 
-                let revRowIndex = allRows |> Seq.scan (fun st (key, v) -> st + v.Length) 0
+                let revRowIndex = allRows |> Seq.scan (fun st (key, v) -> st + v.Length) 0 |> Seq.toArray
                 let revColIndex = allRows |> Seq.collect snd
 
-                DirectedGraph(revRowIndex, revColIndex, verticesNameToOrdinal)            
+                DirectedGraph(revRowIndex.[0..revRowIndex.Length - 2], revColIndex, verticesNameToOrdinal)            
             )
         
-        let eulerian =
-            lazy (
-                
-            )
         /// <summary>
         /// Create the graph from an array of strings
         /// </summary>
@@ -167,8 +163,8 @@ module DirectedGraph =
         member this.Subgraph (vertices : string list) = Seq.init (vertices.Count()) (fun i -> vertices.[i], this.[vertices.[i]])
 
         member this.Reverse = reverse.Force()
-        member private this.RowIndex = rowIndex
-        member private this.ColIndex = colIndex
+        member this.RowIndex = rowIndex
+        member this.ColIndex = colIndex
 
         member private this.GetConnectedVertices ordinal = getVertexConnections ordinal
         member private this.GetConnectedToMe ordinal = this.Reverse.GetConnectedVertices ordinal
@@ -182,17 +178,7 @@ module DirectedGraph =
         /// <summary>
         /// Is this a Eulerian graph: i.e., in-degree of all vertices = out-degree
         /// </summary>
-        member this.IsEulerian =
-            this.IsConnected && (
-                let gr = this.AsEnumerable |> Seq.map (fun (v, into) -> v, into.Length) |> Seq.toArray
-                let rev = this.Reverse.AsEnumerable |> Seq.map (fun (v, into) -> v, into.Length) |> Seq.toArray
-
-                if gr.Length <> rev.Length then false
-                else
-                    Array.zip (Array.sortBy fst gr) (Array.sortBy fst rev)
-                    |> Array.exists (fun ((v, into), (v1, into1)) -> v <> v1 || into <> into1)
-                    |> not)
-
+        member this.IsEulerian = this.IsConnected && this.Reverse.RowIndex = this.RowIndex
         
         /// <summary>
         /// 0 -> 1 -> 2 -> 3 -> ... -> n -> 0
