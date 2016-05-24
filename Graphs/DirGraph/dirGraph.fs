@@ -76,10 +76,10 @@ module DirectedGraph =
                     |> Seq.sortBy fst
                     
 
-                let revRowIndex = allRows |> Seq.scan (fun st (key, v) -> st + v.Length) 0 |> Seq.toArray
+                let revRowIndex = allRows |> Seq.scan (fun st (key, v) -> st + v.Length) 0 |> Seq.take rowIndex.Length
                 let revColIndex = allRows |> Seq.collect snd
 
-                DirectedGraph(revRowIndex.[0..revRowIndex.Length - 2], revColIndex, verticesNameToOrdinal)            
+                DirectedGraph(revRowIndex, revColIndex, verticesNameToOrdinal)            
             )
         
         /// <summary>
