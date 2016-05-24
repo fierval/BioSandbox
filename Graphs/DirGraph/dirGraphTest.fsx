@@ -39,3 +39,6 @@ Visualizer.Visualize(grs)
 Visualizer.Visualize(grs.Reverse)
 
 Visualizer.Visualize(grs, clusters = true)
+
+let rosgr = DirectedGraph.FromFile(@"C:\Users\boris\Downloads\eulerian_cycle.txt")
+let euler = DirectedGraph.GenerateEulerGraph 100 3

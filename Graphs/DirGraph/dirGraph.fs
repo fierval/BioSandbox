@@ -82,6 +82,10 @@ module DirectedGraph =
                 DirectedGraph(revRowIndex, revColIndex, verticesNameToOrdinal)            
             )
         
+        let eulerian =
+            lazy (
+                
+            )
         /// <summary>
         /// Create the graph from an array of strings
         /// </summary>
@@ -178,16 +182,16 @@ module DirectedGraph =
         /// <summary>
         /// Is this a Eulerian graph: i.e., in-degree of all vertices = out-degree
         /// </summary>
-        //TODO: Add fully connected check
         member this.IsEulerian =
-            let gr = this.AsEnumerable |> Seq.map (fun (v, into) -> v, into.Length) |> Seq.toArray
-            let rev = this.Reverse.AsEnumerable |> Seq.map (fun (v, into) -> v, into.Length) |> Seq.toArray
+            this.IsConnected && (
+                let gr = this.AsEnumerable |> Seq.map (fun (v, into) -> v, into.Length) |> Seq.toArray
+                let rev = this.Reverse.AsEnumerable |> Seq.map (fun (v, into) -> v, into.Length) |> Seq.toArray
 
-            if gr.Length <> rev.Length then false
-            else
-                Array.zip (Array.sortBy fst gr) (Array.sortBy fst rev)
-                |> Array.exists (fun ((v, into), (v1, into1)) -> v <> v1 || into <> into1)
-                |> not
+                if gr.Length <> rev.Length then false
+                else
+                    Array.zip (Array.sortBy fst gr) (Array.sortBy fst rev)
+                    |> Array.exists (fun ((v, into), (v1, into1)) -> v <> v1 || into <> into1)
+                    |> not)
 
         
         /// <summary>
@@ -265,7 +269,8 @@ module DirectedGraph =
             ]
                                                     
         member private this.Worker = getWorker()
-
+        member this.IsConnected = this.FindConnectedComponents () |> fun l -> l.Length = 1
+            
         override this.Equals g2 =
             match g2 with
             | :? DirectedGraph as g ->
