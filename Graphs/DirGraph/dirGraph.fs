@@ -226,7 +226,9 @@ module DirectedGraph =
         /// <summary>
         /// Finds all connected components and returns them as a list of vertex sets.
         /// </summary>
-        member this.FindConnectedComponents () =
+        member this.FindConnectedComponents (?oneOnly) =
+            let oneOnly = defaultArg oneOnly false
+
             let rnd = Random()
             let mutable vertices = Enumerable.Range(0, this.Vertices) |> Seq.toList
             
@@ -250,12 +252,18 @@ module DirectedGraph =
                         |> List.take 1
                         |> List.exactlyOne
 
-                    vertices <- vertices.Except connected |> Seq.toList
+                    vertices <- if oneOnly then [] else vertices.Except connected |> Seq.toList
+
                     yield connected |> Seq.map (fun i -> verticesOrdinalToNames.[i]) |> Seq.toList
             ]
-                                                    
+            
+        // GPU worker                                                    
         member private this.Worker = getWorker()
-        member this.IsConnected = this.FindConnectedComponents () |> fun l -> l.Length = 1
+
+        member this.IsConnected = 
+            this.FindConnectedComponents (oneOnly = true) 
+            |> List.exactlyOne 
+            |> fun l -> l.Length = verticesNameToOrdinal.Count
             
         override this.Equals g2 =
             match g2 with
