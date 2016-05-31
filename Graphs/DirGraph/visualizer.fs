@@ -79,7 +79,10 @@ module Visualizer =
             |> Seq.windowed 2
             |> Seq.mapi (fun i [|out; in'|] -> String.Format("{0} -> {1} [label = {2}, fontcolor = blue, color={3}]", out, in', label i, color i))
             |> Seq.reduce (fun acc e -> acc + "; " + e)
-            |> fun gr -> eulerPath.[0] + "[color=green, style=filled]; " + gr
+            |> fun gr -> 
+                eulerPath.[0] + "[color=green, style=filled]; " + 
+                    (if eulerPath.[0] <> eulerPath.[eulerPath.Length - 1] then 
+                        eulerPath.[eulerPath.Length - 1] + "[color=red, style=filled]; " else String.Empty) + gr
             |> fun gr -> createVisualClusters ("digraph { " + gr + "}") 
 
         else 

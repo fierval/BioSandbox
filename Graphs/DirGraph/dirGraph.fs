@@ -35,7 +35,7 @@ module DirectedGraph =
 
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
-        let nEdges = rowIndex.[rowIndex.Length - 1]
+        let nEdges = colIndex.Length
         let verticesNameToOrdinal = defaultArg verticesNameToOrdinal ([0..rowIndex.Length - 2].ToDictionary((fun s -> s.ToString()), id) :> IDictionary<string, int>)
         let nVertex = verticesNameToOrdinal.Count
 
@@ -85,17 +85,11 @@ module DirectedGraph =
         let hasEulerPath = 
             lazy (
                 // start: out = in + 1
-                let rows = Seq.zip rowIndex (reverse.Force().RowIndex)
-                let remains = 
-                    rows 
-                    |> Seq.skipWhile (fun (gr, rev) -> gr = rev) 
-                (
-                    remains |> Seq.isEmpty
-                    ||
-                    remains
-                    |> Seq.exists (fun (gr, rev) ->  abs (gr - rev) > 1)
-                )
-                |> not
+                let rows = Array.zip rowIndex (reverse.Force().RowIndex)
+                let pref = Array.takeWhile (fun (gr, rev) -> gr = rev) rows
+                let middle = Array.takeWhile (fun (gr, rev) -> abs(gr - rev) = 1) rows.[pref.Length..]
+                let remains = Array.takeWhile (fun (gr, rev) -> gr = rev) rows.[pref.Length + middle.Length..]
+                pref.Length <> rows.Length && remains.Length + middle.Length + pref.Length = rows.Length
             )
         
         /// <summary>
@@ -212,11 +206,22 @@ module DirectedGraph =
         /// </summary>
         /// <param name="n"> number of vertices </param>
         /// <param name="k"> max number of connections in one direction</param>
-        static member GenerateEulerGraph n k =
+        static member GenerateEulerGraph(n, k, ?path) =
+            let isPath = defaultArg path false
+
             let rnd = Random(int DateTime.Now.Ticks)
             let connections = Array.init n (fun i -> rnd.Next(1, k + 1))
             let connectionsReverse = Array.zeroCreate n
             connections.CopyTo(connectionsReverse, 0)
+            
+            if isPath then
+                let outLessThanIn = rnd.Next(n)
+                let mutable inLessThanOut = rnd.Next(n)
+                while outLessThanIn = inLessThanOut do
+                    inLessThanOut <- rnd.Next(n)
+                connections.[outLessThanIn] <- connections.[outLessThanIn] - 1
+                connectionsReverse.[inLessThanOut] <- connections.[inLessThanOut] - 1
+
             let rowIndex = [0].ToList()
             let colIndex = List<int>()
             for i = 0 to n - 1 do
@@ -289,7 +294,7 @@ module DirectedGraph =
                 // in the case of Eulerian path we need to figure out where to start:
                 let mutable curVertex = 
                     if hasEulerPath.Force() then
-                        let diffs = Array.map2 (fun gr rev -> gr - rev) this.RowIndex this.Reverse.RowIndex
+                        let diffs = Array.map2 (-) this.RowIndex this.Reverse.RowIndex
                         try // if the vertex with out-degre > in-degree comes first...
                             (diffs |> Array.findIndex (fun d -> d = 1)) - 1
                         with
@@ -301,7 +306,7 @@ module DirectedGraph =
                 let visited = Dictionary<int, int []>()
                 let start = curVertex
                 let mutable cycle = []
-                visited.Add(0, this.GetConnectedVertices curVertex)
+                visited.Add(curVertex, this.GetConnectedVertices curVertex)
                 let mutable first = true
 
                 while stack.Count > 0 || first do
