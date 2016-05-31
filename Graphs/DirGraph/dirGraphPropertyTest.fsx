@@ -17,7 +17,6 @@ open FsCheck
 open System
 open System.Text.RegularExpressions
 open System.Diagnostics
-open DirectedGraph
 
 //let nucl = Gen.oneof [gen {return 'A'}; gen {return 'C'}; gen {return 'G'}; gen {return 'T'}]
 let nucl = Gen.choose(int 'A', int 'Z') |> Gen.map char
@@ -51,4 +50,4 @@ type Marker =
         gr.Reverse.Reverse = gr
 
 Arb.registerByType(typeof<Marker>)
-Check.QuickAll(typeof<Marker>)
+//Check.QuickAll(typeof<Marker>)

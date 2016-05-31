@@ -81,6 +81,22 @@ module DirectedGraph =
 
                 DirectedGraph(revRowIndex, revColIndex, verticesNameToOrdinal)            
             )
+
+        let hasEulerPath = 
+            lazy (
+                // start: out = in + 1
+                let rows = Seq.zip rowIndex (reverse.Force().RowIndex)
+                let remains = 
+                    rows 
+                    |> Seq.skipWhile (fun (gr, rev) -> gr = rev) 
+                (
+                    remains |> Seq.isEmpty
+                    ||
+                    remains
+                    |> Seq.exists (fun (gr, rev) ->  abs (gr - rev) > 1)
+                )
+                |> not
+            )
         
         /// <summary>
         /// Create the graph from an array of strings
@@ -178,7 +194,9 @@ module DirectedGraph =
         /// <summary>
         /// Is this a Eulerian graph: i.e., in-degree of all vertices = out-degree
         /// </summary>
-        member this.IsEulerian = this.IsConnected && this.Reverse.RowIndex = this.RowIndex
+        member this.IsEulerian = 
+            this.IsConnected && 
+                (this.Reverse.RowIndex = this.RowIndex || hasEulerPath.Force())
         
         /// <summary>
         /// 0 -> 1 -> 2 -> 3 -> ... -> n -> 0
@@ -264,7 +282,43 @@ module DirectedGraph =
             this.FindConnectedComponents (oneOnly = true) 
             |> List.exactlyOne 
             |> fun l -> l.Length = verticesNameToOrdinal.Count
-            
+      
+        member this.FindEulerPath () =
+            if not this.IsEulerian then []
+            else
+                // in the case of Eulerian path we need to figure out where to start:
+                let mutable curVertex = 
+                    if hasEulerPath.Force() then
+                        let diffs = Array.map2 (fun gr rev -> gr - rev) this.RowIndex this.Reverse.RowIndex
+                        try // if the vertex with out-degre > in-degree comes first...
+                            (diffs |> Array.findIndex (fun d -> d = 1)) - 1
+                        with
+                        _ -> diffs |> Array.findIndexBack (fun d -> d = -1)
+                    else
+                        0    
+
+                let stack = Stack<int>()
+                let visited = Dictionary<int, int []>()
+                let start = curVertex
+                let mutable cycle = []
+                visited.Add(0, this.GetConnectedVertices curVertex)
+                let mutable first = true
+
+                while stack.Count > 0 || first do
+                    first <- false
+                    let connected = visited.[curVertex]
+                    if connected.Length = 0 then
+                        cycle <- curVertex :: cycle
+                        curVertex <- stack.Pop()                         
+                    else
+                        stack.Push curVertex
+                        visited.[curVertex] <- connected.[1..]
+                        curVertex <- connected.[0]
+                        if not (visited.ContainsKey curVertex) then
+                            visited.Add(curVertex, this.GetConnectedVertices curVertex)
+
+                start::cycle |> List.map (fun i -> verticesOrdinalToNames.[i])
+                    
         override this.Equals g2 =
             match g2 with
             | :? DirectedGraph as g ->

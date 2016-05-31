@@ -7,6 +7,7 @@ open System
 open DrawGraph
 open System.Linq
 open Alea.CUDA
+#nowarn "25"
 
 [<AutoOpen>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -65,28 +66,44 @@ module Visualizer =
         visualizeSubgraph subgraph subgraphRev outConMin inConMin  -1 
         |> createVisual
         
-    let internal visualizeAll (graph : DirectedGraph) outConMin inConMin clusters = 
-        let rev = graph.Reverse
-        let self = graph.AsEnumerable
-        let selfRev = rev.AsEnumerable
+    let internal visualizeAll (graph : DirectedGraph) outConMin inConMin clusters euler eulerLabels =
+        if euler then
+            let eulerPath = graph.FindEulerPath()
+            if eulerPath |> Seq.isEmpty then failwith "Graph not Eulerian"
 
-        let connectedComponents = 
-            if clusters then 
-                graph.FindConnectedComponents() 
-                |> List.map (fun h -> h.AsEnumerable() |> Seq.toList) 
-            else []
+            let color i = if i &&& 0x1 = 0 then "green" else "red"
+            let labels = eulerLabels |> Seq.toList
+            let label i = if not (List.isEmpty labels) then labels.[i] else (i + 1).ToString()
 
-        if not clusters then visualizeEntire self selfRev outConMin inConMin
-        else
-            connectedComponents 
-            |> List.mapi
-                (fun i vertices ->
-                    let subgraph = vertices |> graph.Subgraph
-                    let subgraphRev = vertices |> rev.Subgraph
-                    visualizeSubgraph subgraph subgraphRev outConMin inConMin i
-                )
-            |> List.reduce (+)
+            eulerPath
+            |> Seq.windowed 2
+            |> Seq.mapi (fun i [|out; in'|] -> String.Format("{0} -> {1} [label = {2}, fontcolor = blue, color={3}]", out, in', label i, color i))
+            |> Seq.reduce (fun acc e -> acc + "; " + e)
+            |> fun gr -> eulerPath.[0] + "[color=green, style=filled]; " + gr
             |> fun gr -> createVisualClusters ("digraph { " + gr + "}") 
+
+        else 
+            let rev = graph.Reverse
+            let self = graph.AsEnumerable
+            let selfRev = rev.AsEnumerable
+
+            let connectedComponents = 
+                if clusters then 
+                    graph.FindConnectedComponents() 
+                    |> List.map (fun h -> h.AsEnumerable() |> Seq.toList) 
+                else []
+
+            if not clusters then visualizeEntire self selfRev outConMin inConMin
+            else
+                connectedComponents 
+                |> List.mapi
+                    (fun i vertices ->
+                        let subgraph = vertices |> graph.Subgraph
+                        let subgraphRev = vertices |> rev.Subgraph
+                        visualizeSubgraph subgraph subgraphRev outConMin inConMin i
+                    )
+                |> List.reduce (+)
+                |> fun gr -> createVisualClusters ("digraph { " + gr + "}") 
                             
     type Visualizer () =
         /// <summary>
@@ -94,9 +111,11 @@ module Visualizer =
         /// </summary>
         /// <param name="into">Optional. If present - should be the minimum number of inbound connections which would select the vertex for coloring.</param>
         /// <param name="out">Optional. If present - should be the minimum number of outbound connections which would select the vertex for coloring.</param>
-        static member Visualize(graph : DirectedGraph, ?into, ?out, ?clusters) =
+        static member Visualize(graph : DirectedGraph, ?into, ?out, ?clusters, ?euler, ?eulerLabels : string seq) =
             let outConMin = defaultArg out 0
             let inConMin = defaultArg into 0
             let clusters = defaultArg clusters false
-            
-            visualizeAll graph outConMin inConMin clusters
+            let euler = defaultArg euler false
+            let eulerLabels = defaultArg eulerLabels Seq.empty
+
+            visualizeAll graph outConMin inConMin clusters euler eulerLabels

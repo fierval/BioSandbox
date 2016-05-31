@@ -26,19 +26,18 @@ let gr1 = DirectedGraph.FromStrings strs1
 
 printfn "%b" (gr = gr1)
 
-Visualizer.Visualize(gr, clusters = true)
-
 let dirg = DirectedGraph.GenerateEulerGraph 100 5
-
-Visualizer.Visualize(dirg, into = 5, out = 5)
-
 let sparse = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"; "1 -> 2, 3"; "3 -> 4, 5"; "x -> y, z"; "2 -> 5"]
 let grs = DirectedGraph.FromStrings sparse
 
+//let rosgr = DirectedGraph.FromFile(@"C:\Users\boris\Downloads\eulerian_cycle.txt")
+//let euler = DirectedGraph.GenerateEulerGraph 100 3
+
+let euler = DirectedGraph.GenerateEulerGraph 8 3
+
 Visualizer.Visualize(grs)
 Visualizer.Visualize(grs.Reverse)
-
+Visualizer.Visualize(dirg, into = 5, out = 5)
 Visualizer.Visualize(grs, clusters = true)
-
-let rosgr = DirectedGraph.FromFile(@"C:\Users\boris\Downloads\eulerian_cycle.txt")
-let euler = DirectedGraph.GenerateEulerGraph 100 3
+Visualizer.Visualize(gr, clusters = true)
+Visualizer.Visualize(euler, euler=true)
