@@ -20,20 +20,21 @@ open System.Diagnostics
 let strs = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
 let strs1 = ["a -> c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
 
-let gr = DirectedGraph<string>.FromStrings strs
-let gr1 = DirectedGraph<string>.FromStrings strs1
-let gr2 = DirectedGraph<string>.FromStrings strs
+type StrGraph = DirectedGraph<string>
+let gr = StrGraph.FromStrings strs
+let gr1 = StrGraph.FromStrings strs1
+let gr2 = StrGraph.FromStrings strs
 
 
 printfn "%b" (gr = gr1)
 printfn "%b" (gr = gr2)
 
 let sparse = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"; "1 -> 2, 3"; "3 -> 4, 5"; "x -> y, z"; "2 -> 5"]
-let grs = DirectedGraph<string>.FromStrings sparse
+let grs = StrGraph.FromStrings sparse
 
-//let rosgr = DirectedGraph<string>.FromFile(@"C:\Users\boris\Downloads\eulerian_cycle.txt")
+//let rosgr = StrGraph.FromFile(@"C:\Users\boris\Downloads\eulerian_cycle.txt")
 
-let euler = DirectedGraph<string>.GenerateEulerGraph(10, 3, path=true)
+let euler = StrGraph.GenerateEulerGraph(10, 3, path=true)
 
 Visualizer.Visualize(grs)
 Visualizer.Visualize(grs.Reverse)
