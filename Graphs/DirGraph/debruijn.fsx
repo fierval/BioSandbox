@@ -38,7 +38,7 @@ let binaryDebruijnSeq n =
         |> List.map (fun s -> prefix s, suffix s)
         |> List.groupBy fst
         |> List.map (fun (v, prefSuf) -> v + " -> " + (prefSuf |> List.map snd |> List.reduce (fun st e -> st + "," + e )))
-        |> DirectedGraph.FromStrings
+        |> DirectedGraph<string>.FromStrings
     
     let debruinSeq = graphStrs.FindEulerPath()
     let debruinNum = debruinSeq |> List.windowed 2 |> List.mapi (fun i [p; s] -> "\"" + (i + 1).ToString() + ":" + s.[s.Length - 1].ToString() + "\"")

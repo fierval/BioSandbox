@@ -17,7 +17,7 @@ let createGraph (graph : string) (processName : string) (graphVizPath : string o
     File.WriteAllText(graphFile, graph)
 
     match processName with
-    | procName when procName = "sfdp.exe" or procName = "dot.exe" ->
+    | procName when procName = "sfdp.exe" || procName = "dot.exe" ->
 
         let pi = ProcessStartInfo(Path.Combine(workingDir, processName))
         pi.CreateNoWindow <- true
@@ -41,5 +41,7 @@ let createGraph (graph : string) (processName : string) (graphVizPath : string o
             if File.Exists (graphFile + ".png") then File.Delete (graphFile + ".png")
     | _ -> failwith "Unknown graphing process"
 
-let createVisual graph = createGraph graph "sfdp.exe" None
-let createVisualClusters graph = createGraph graph "dot.exe" None
+let visualizeDot graph = createGraph graph "dot.exe" None
+let visualizeSfdp graph = createGraph graph "sfdp.exe" None
+let createVisual = visualizeSfdp
+let createVisualClusters = visualizeDot

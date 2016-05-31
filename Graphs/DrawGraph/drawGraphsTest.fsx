@@ -9,7 +9,7 @@
 #load "drawGraphs.fs"
 open DrawGraph
 
-createGraph "digraph{a->b; b->c; 2->1; d->b; b->b; a->d}" None
+createGraph "digraph{a->b; b->c; 2->1; d->b; b->b; a->d}" "dot.exe" None
 
 // Define your library scripting code here
 

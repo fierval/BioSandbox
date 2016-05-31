@@ -34,7 +34,7 @@ let grs = StrGraph.FromStrings sparse
 
 //let rosgr = StrGraph.FromFile(@"C:\Users\boris\Downloads\eulerian_cycle.txt")
 
-let euler = StrGraph.GenerateEulerGraph(10, 3, path=true)
+let euler = StrGraph.GenerateEulerGraph(12, 3, path=true)
 
 Visualizer.Visualize(grs)
 Visualizer.Visualize(grs.Reverse)

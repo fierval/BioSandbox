@@ -14,6 +14,7 @@ open Alea.CUDA
 module Visualizer =
     
     type GraphSeq<'a> = seq<'a * 'a []>
+    let internal nDotThreshold = 10
 
     let internal toColor (c : string) (vertices : seq<'a>) =
         if vertices |> Seq.isEmpty then "" else
@@ -62,9 +63,9 @@ module Visualizer =
 
         visualizable
 
-    let internal visualizeEntire subgraph subgraphRev outConMin inConMin = 
+    let internal visualizeEntire subgraph subgraphRev outConMin inConMin visualizer = 
         visualizeSubgraph subgraph subgraphRev outConMin inConMin  -1 
-        |> createVisual
+        |> visualizer
         
     let internal visualizeAll (graph : DirectedGraph<'a>) outConMin inConMin clusters euler eulerLabels =
         if euler then
@@ -83,7 +84,7 @@ module Visualizer =
                 eulerPath.[0].ToString() + "[color=green, style=filled]; " + 
                     (if eulerPath.[0] <> eulerPath.[eulerPath.Length - 1] then 
                         eulerPath.[eulerPath.Length - 1].ToString() + "[color=red, style=filled]; " else String.Empty) + gr
-            |> fun gr -> createVisualClusters ("digraph { " + gr + "}") 
+            |> fun gr -> ("digraph { " + gr + "}") |> if graph.Vertices <= nDotThreshold then visualizeDot else visualizeSfdp
 
         else 
             let rev = graph.Reverse
@@ -96,7 +97,7 @@ module Visualizer =
                     |> List.map (fun h -> h.AsEnumerable() |> Seq.toList) 
                 else []
 
-            if not clusters then visualizeEntire self selfRev outConMin inConMin
+            if not clusters then visualizeEntire self selfRev outConMin inConMin (if graph.Vertices <= nDotThreshold then visualizeDot else visualizeSfdp)
             else
                 connectedComponents 
                 |> List.mapi
