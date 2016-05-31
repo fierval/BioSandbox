@@ -31,16 +31,16 @@ module DirectedGraph =
     /// v -> a, b, c, d - v - unique vertex name for each line of the file. a, b, c, d - names of vertices it connects to.
     /// </summary>
     [<StructuredFormatDisplay("{AsEnumerable}")>]
-    type DirectedGraph (rowIndex : int seq, colIndex : int seq, ?verticesNameToOrdinal : IDictionary<string, int>) = 
+    type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<'a, int>) = 
 
         let rowIndex  = rowIndex.ToArray()
         let colIndex = colIndex.ToArray()
         let nEdges = colIndex.Length
-        let verticesNameToOrdinal = defaultArg verticesNameToOrdinal ([0..rowIndex.Length - 2].ToDictionary((fun s -> s.ToString()), id) :> IDictionary<string, int>)
+        let verticesNameToOrdinal = verticesNameToOrdinal 
         let nVertex = verticesNameToOrdinal.Count
 
         let ordinalToNames () =
-            let res : string [] = Array.zeroCreate verticesNameToOrdinal.Count
+            let res : 'a [] = Array.zeroCreate verticesNameToOrdinal.Count
             verticesNameToOrdinal 
             |> Seq.iter (fun kvp -> res.[kvp.Value] <- kvp.Key)
 
@@ -151,7 +151,7 @@ module DirectedGraph =
 
             lines |> Seq.iter addVertex
 
-            DirectedGraph(rowIndexRaw |> Seq.scan (+) 0, colIndex, nameToOrdinal)
+            DirectedGraph<string>(rowIndexRaw |> Seq.scan (+) 0, colIndex, nameToOrdinal)
 
 
         /// <summary>
@@ -163,14 +163,14 @@ module DirectedGraph =
             if String.IsNullOrWhiteSpace fileName || not (File.Exists fileName) then failwith "Invalid file"
             
             let lines = File.ReadLines(fileName)
-            DirectedGraph.FromStrings(lines)                
+            DirectedGraph<string>.FromStrings(lines)                
 
         member this.Vertices = nVertex
         member this.Item
             with get vertex = ordinalFromName vertex |> getVertexConnections |> Array.map nameFromOrdinal
 
         member this.AsEnumerable = Seq.init nVertex (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
-        member this.Subgraph (vertices : string list) = Seq.init (vertices.Count()) (fun i -> vertices.[i], this.[vertices.[i]])
+        member this.Subgraph (vertices : 'a list) = Seq.init (vertices.Count()) (fun i -> vertices.[i], this.[vertices.[i]])
 
         member this.Reverse = reverse.Force()
         member this.RowIndex = rowIndex
@@ -191,15 +191,6 @@ module DirectedGraph =
         member this.IsEulerian = 
             this.IsConnected && 
                 (this.Reverse.RowIndex = this.RowIndex || hasEulerPath.Force())
-        
-        /// <summary>
-        /// 0 -> 1 -> 2 -> 3 -> ... -> n -> 0
-        /// </summary>
-        /// <param name="n">Index of the last vertex</param>
-        static member GenerateSimpleLoop n =
-            let rowIndex = [0..n]
-            let colIndex = [1..n - 1] @ [0]
-            DirectedGraph(rowIndex, colIndex)
         
         /// <summary>
         /// Generates a Eulerian graph
@@ -244,7 +235,7 @@ module DirectedGraph =
                                 Some(idx, (st + 1, k + 1)))
                     |> Seq.filter(fun x -> x >= 0)
                 colIndex.AddRange cols    
-            DirectedGraph(rowIndex, colIndex)
+            DirectedGraph(rowIndex, colIndex, ([0..rowIndex.Count - 2].ToDictionary((fun s -> s.ToString()), id) :> IDictionary<string, int>))
         
         /// <summary>
         /// Finds all connected components and returns them as a list of vertex sets.
@@ -323,28 +314,28 @@ module DirectedGraph =
                             visited.Add(curVertex, this.GetConnectedVertices curVertex)
 
                 start::cycle |> List.map (fun i -> verticesOrdinalToNames.[i])
-                    
+                        
         override this.Equals g2 =
             match g2 with
-            | :? DirectedGraph as g ->
+            | :? DirectedGraph<'a> as g ->
                 if g.Vertices = this.Vertices then
 
-                    let grSort (gr : seq<string * string[]>) =
+                    let grSort (gr : seq<'a * 'a[]>) =
                         gr |> Seq.sortBy fst
 
                     let gseq = g.AsEnumerable |> grSort
                     let thisSeq = this.AsEnumerable |> grSort
 
-                    let getKeys (gr : seq<string*string[]>) =
+                    let getKeys (gr : seq<'a * 'a[]>) =
                         gr |> Seq.map fst |> Seq.toArray
                 
-                    let getVals (gr : seq<string * string[]>) =
+                    let getVals (gr : seq<'a * 'a[]>) =
                         gr |> Seq.map (fun (a, b) -> b |> Array.sort) |> Seq.toArray
 
-                    let valuesEq (gr : seq<string * string []>) (gr1 : seq<string * string []>) =
+                    let valuesEq (gr : seq<'a * 'a []>) (gr1 : seq<'a * 'a []>) =
                         not (Seq.zip (getVals gr) (getVals gr1) |> Seq.exists (fun (a, b) -> a <> b))
 
-                    let keysEq (gr : seq<string * string []>) (gr1 : seq<string * string []>) =
+                    let keysEq (gr : seq<'a * 'a []>) (gr1 : seq<'a * 'a []>) =
                         (getKeys gr) = (getKeys gr1)
 
                     keysEq thisSeq gseq && valuesEq thisSeq gseq

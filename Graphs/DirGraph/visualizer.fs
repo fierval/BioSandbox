@@ -13,9 +13,9 @@ open Alea.CUDA
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Visualizer =
     
-    type GraphSeq = seq<string * string []>
+    type GraphSeq<'a> = seq<'a * 'a []>
 
-    let internal toColor (c : string) (vertices : seq<string>) =
+    let internal toColor (c : string) (vertices : seq<'a>) =
         if vertices |> Seq.isEmpty then "" else
         let formatstr = 
             let f = "{0} [style=filled, color={1}"
@@ -25,8 +25,8 @@ module Visualizer =
         |> Seq.reduce (+)
                 
 
-    let internal coloring (self: GraphSeq) (selfRev : GraphSeq) in' out =
-        let bottomOutgoing (graphSeq : seq<string * string []>) bottom = 
+    let internal coloring (self: GraphSeq<'a>) (selfRev : GraphSeq<'a>) in' out =
+        let bottomOutgoing (graphSeq : GraphSeq<'a>) bottom = 
             if bottom = 0 then Seq.empty
             else
                 graphSeq
@@ -42,7 +42,7 @@ module Visualizer =
         outInVertices |> toColor "blue"                   
 
     // Create a "graph" or a "cluster" visualization based on clusterN parameter
-    let internal visualizeSubgraph (subgraph : GraphSeq) (subgraphRev : GraphSeq) outConMin inConMin clusterN =
+    let internal visualizeSubgraph (subgraph : GraphSeq<'a>) (subgraphRev : GraphSeq<'a>) outConMin inConMin clusterN =
         let graphOpen = if clusterN >= 0 then "subgraph cluster_" + clusterN.ToString() + "{ color = red; " else "digraph {"
         let graphClose = "}"
 
@@ -52,10 +52,10 @@ module Visualizer =
             subgraph 
             |> Seq.map 
                 (fun (v, c) -> 
-                    if c.Length = 0 then v
+                    if c.Length = 0 then v.ToString()
                     else
                     c 
-                    |> Array.map (fun s -> v + " -> " + s)
+                    |> Array.map (fun s -> v.ToString() + " -> " + s.ToString())
                     |> Array.reduce (fun acc e -> acc + "; " + e))
             |> Seq.reduce (fun acc e -> acc + "; " + e)
             |> fun v -> graphOpen + colorOut + colorIn + colorBoth + v + graphClose
@@ -66,7 +66,7 @@ module Visualizer =
         visualizeSubgraph subgraph subgraphRev outConMin inConMin  -1 
         |> createVisual
         
-    let internal visualizeAll (graph : DirectedGraph) outConMin inConMin clusters euler eulerLabels =
+    let internal visualizeAll (graph : DirectedGraph<'a>) outConMin inConMin clusters euler eulerLabels =
         if euler then
             let eulerPath = graph.FindEulerPath()
             if eulerPath |> Seq.isEmpty then failwith "Graph not Eulerian"
@@ -80,9 +80,9 @@ module Visualizer =
             |> Seq.mapi (fun i [|out; in'|] -> String.Format("{0} -> {1} [label = {2}, fontcolor = blue, color={3}]", out, in', label i, color i))
             |> Seq.reduce (fun acc e -> acc + "; " + e)
             |> fun gr -> 
-                eulerPath.[0] + "[color=green, style=filled]; " + 
+                eulerPath.[0].ToString() + "[color=green, style=filled]; " + 
                     (if eulerPath.[0] <> eulerPath.[eulerPath.Length - 1] then 
-                        eulerPath.[eulerPath.Length - 1] + "[color=red, style=filled]; " else String.Empty) + gr
+                        eulerPath.[eulerPath.Length - 1].ToString() + "[color=red, style=filled]; " else String.Empty) + gr
             |> fun gr -> createVisualClusters ("digraph { " + gr + "}") 
 
         else 
@@ -114,7 +114,7 @@ module Visualizer =
         /// </summary>
         /// <param name="into">Optional. If present - should be the minimum number of inbound connections which would select the vertex for coloring.</param>
         /// <param name="out">Optional. If present - should be the minimum number of outbound connections which would select the vertex for coloring.</param>
-        static member Visualize(graph : DirectedGraph, ?into, ?out, ?clusters, ?euler, ?eulerLabels : string seq) =
+        static member Visualize(graph : DirectedGraph<'a>, ?into, ?out, ?clusters, ?euler, ?eulerLabels : string seq) =
             let outConMin = defaultArg out 0
             let inConMin = defaultArg into 0
             let clusters = defaultArg clusters false

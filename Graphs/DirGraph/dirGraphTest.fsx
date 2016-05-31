@@ -16,22 +16,24 @@ open FsCheck
 open System
 open System.Text.RegularExpressions
 open System.Diagnostics
-open DirectedGraph
 
 let strs = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
 let strs1 = ["a -> c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
 
-let gr = DirectedGraph.FromStrings strs
-let gr1 = DirectedGraph.FromStrings strs1
+let gr = DirectedGraph<string>.FromStrings strs
+let gr1 = DirectedGraph<string>.FromStrings strs1
+let gr2 = DirectedGraph<string>.FromStrings strs
+
 
 printfn "%b" (gr = gr1)
+printfn "%b" (gr = gr2)
 
 let sparse = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"; "1 -> 2, 3"; "3 -> 4, 5"; "x -> y, z"; "2 -> 5"]
-let grs = DirectedGraph.FromStrings sparse
+let grs = DirectedGraph<string>.FromStrings sparse
 
-//let rosgr = DirectedGraph.FromFile(@"C:\Users\boris\Downloads\eulerian_cycle.txt")
+//let rosgr = DirectedGraph<string>.FromFile(@"C:\Users\boris\Downloads\eulerian_cycle.txt")
 
-let euler = DirectedGraph.GenerateEulerGraph(100, 5, path=true)
+let euler = DirectedGraph<string>.GenerateEulerGraph(10, 3, path=true)
 
 Visualizer.Visualize(grs)
 Visualizer.Visualize(grs.Reverse)
