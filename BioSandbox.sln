@@ -9,6 +9,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DrawGraph", "Graphs\DrawGra
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DirGraph", "Graphs\DirGraph\DirGraph.fsproj", "{CBD5B36F-44E7-4FB1-8B90-B73992C9C397}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GpuSort", "GpuSort\GpuSort.fsproj", "{8437015F-05C1-4A5F-9FB2-C115236E659C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{CBD5B36F-44E7-4FB1-8B90-B73992C9C397}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBD5B36F-44E7-4FB1-8B90-B73992C9C397}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBD5B36F-44E7-4FB1-8B90-B73992C9C397}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8437015F-05C1-4A5F-9FB2-C115236E659C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8437015F-05C1-4A5F-9FB2-C115236E659C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8437015F-05C1-4A5F-9FB2-C115236E659C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8437015F-05C1-4A5F-9FB2-C115236E659C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

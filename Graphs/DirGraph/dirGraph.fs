@@ -37,7 +37,7 @@ module DirectedGraph =
         let colIndex = colIndex.ToArray()
         let nEdges = colIndex.Length
         let verticesNameToOrdinal = verticesNameToOrdinal 
-        let nVertex = verticesNameToOrdinal.Count
+        let nVertices = verticesNameToOrdinal.Count
 
         let ordinalToNames () =
             let res : 'a [] = Array.zeroCreate verticesNameToOrdinal.Count
@@ -57,7 +57,7 @@ module DirectedGraph =
             colIndex.[start..end']
 
         let asOrdinalsEnumerable () =
-            Seq.init nVertex (fun i -> i, getVertexConnections i)
+            Seq.init nVertices (fun i -> i, getVertexConnections i)
 
         let reverse =
             lazy (
@@ -165,11 +165,13 @@ module DirectedGraph =
             let lines = File.ReadLines(fileName)
             DirectedGraph<string>.FromStrings(lines)                
 
-        member this.Vertices = nVertex
+        member this.Vertices = nVertices
+        member this.Edges = nEdges
+
         member this.Item
             with get vertex = ordinalFromName vertex |> getVertexConnections |> Array.map nameFromOrdinal
 
-        member this.AsEnumerable = Seq.init nVertex (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
+        member this.AsEnumerable = Seq.init nVertices (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
         member this.Subgraph (vertices : 'a list) = Seq.init (vertices.Count()) (fun i -> vertices.[i], this.[vertices.[i]])
 
         member this.Reverse = reverse.Force()

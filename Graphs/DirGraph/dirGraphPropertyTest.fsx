@@ -41,12 +41,12 @@ let graphGen len number =
         |> Gen.map (Array.distinctBy fst)
         |> Gen.map (fun arr ->  arr |> Array.map (fun (a, b) -> a + " -> " + b))
     )
-    |> Gen.map DirectedGraph.FromStrings
+    |> Gen.map DirectedGraph<string>.FromStrings
 
 
 type Marker =
     static member digr = graphGen 3 500 |> Arb.fromGen
-    static member ``Reverse of the Reverse equals itself`` (gr : DirectedGraph) =
+    static member ``Reverse of the Reverse equals itself`` (gr : DirectedGraph<string>) =
         gr.Reverse.Reverse = gr
 
 Arb.registerByType(typeof<Marker>)
