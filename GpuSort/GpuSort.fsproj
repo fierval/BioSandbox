@@ -62,9 +62,9 @@
     <Compile Include="GpuSort.fs" />
     <None Include="SortTest.fsx" />
     <Content Include="packages.config" />
+    <None Include="SortDUT.fsx" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
-    <None Include="SortDUT.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">

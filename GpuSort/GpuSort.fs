@@ -45,10 +45,14 @@ let sort (arr : int []) =
     let len = arr.Length
     if len = 0 then [||]
     else
-        let numIter = arr |> Array.max |> getBitCount
-
         let gridSize = divup arr.Length blockSize
         let lp = LaunchParam(gridSize, blockSize)
+        
+        // reducer to find the maximum number & get the number of iterations
+        // from it.
+        use reduceModule = new DeviceReduceModule<int>(target, <@ max @>)
+        use reducer = reduceModule.Create(len)
+
         use scanModule = new DeviceScanModule<int>(target, <@ (+) @>)
         use scanner = scanModule.Create(len)
 
@@ -57,8 +61,11 @@ let sort (arr : int []) =
         use numFalses = worker.Malloc(len)
         use dArrTemp = worker.Malloc(len)
 
+        // Number of iterations = bit count of the maximum number
+        let numIter = reducer.Reduce(dArr.Ptr, len) |> getBitCount
+
         let getArr i = if i &&& 1 = 0 then dArr else dArrTemp
-        let getOutArr i = if i &&& 1 = 0 then dArrTemp else dArr
+        let getOutArr i = getArr (i + 1)
 
         for i = 0 to numIter - 1 do
             // compute significant bits

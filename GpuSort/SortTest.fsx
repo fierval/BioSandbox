@@ -13,7 +13,7 @@ Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIREC
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\release")
 
 // load everything
-let arr = generateRandomData 10000000
+let arr = generateRandomData 100000
 sort arr
 
 let seqElapsed, cudaElapsed =
