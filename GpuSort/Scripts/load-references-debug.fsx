@@ -9,4 +9,4 @@
 #r "System.dll"
 #r "System.Numerics.dll"
 #r "System.Configuration.dll"
-#load "../../packages/FSharp.Charting.0.90.14/FSharp.Charting.fsx"
+#r "../../packages/FSharp.Charting.0.90.14/lib/net40/FSharp.Charting.dll"

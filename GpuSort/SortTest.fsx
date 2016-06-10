@@ -8,6 +8,7 @@ open Alea.CUDA.Utilities
 open System.IO
 open System.Diagnostics
 open FSharp.Charting
+open System
 
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\release")
@@ -15,12 +16,13 @@ Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, 
 // load everything
 let arr = generateRandomData 100000
 sort arr
+let start = 10000000
 
 let seqElapsed, cudaElapsed =
     [1..10] 
     |> List.map
           (fun i -> 
-            let arr = generateRandomData (10000000 * i)
+            let arr = generateRandomData (start * i)
             let sw = Stopwatch()
             sw.Start()
             let carr = sort arr
@@ -41,6 +43,6 @@ let seqElapsed, cudaElapsed =
 Chart.Combine(
     [Chart.Line(seqElapsed, Name="Sequential"); Chart.Line(cudaElapsed, Name="Alea.Cuda")])
     .WithYAxis(Log=false, Title = "msec")
-    .WithXAxis(Title = "elements x 10,000,000")
+    .WithXAxis(Title = String.Format("elements x {0:N0}", start))
     .WithLegend(InsideArea=false)
     
