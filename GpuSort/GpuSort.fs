@@ -33,13 +33,11 @@ let scatter (arr : deviceptr<int>) (len: int) (falsesScan : deviceptr<int>) (rev
         out.[addr] <- arr.[idx]
 
 let getBitCount n =
-    if n = 0 then 0 
-    else
-        let rec getNextPowerOfTwoRec n acc =
-            if n = 0 then acc
-            else getNextPowerOfTwoRec (n >>> 1) (acc + 1)
+    let rec getNextPowerOfTwoRec n acc =
+        if n = 0 then acc
+        else getNextPowerOfTwoRec (n >>> 1) (acc + 1)
 
-        getNextPowerOfTwoRec n 0
+    getNextPowerOfTwoRec n 0
 
 let sort (arr : int []) =
     let len = arr.Length
@@ -87,7 +85,7 @@ let generateRandomData n =
     use cudaRandom = (new XorShift7.CUDA.DefaultNormalRandomModuleF32(target)).Create(1, 1, seed) :> IRandom<float32>
     use prngBuffer = cudaRandom.AllocCUDAStreamBuffer n
     
-        // create random numbers
+    // create random numbers
     cudaRandom.Fill(0, n, prngBuffer)
     // transfer results from device to host 
     prngBuffer.Gather() |> Array.map (((*) (float32 n)) >> int >> (fun x -> if x = Int32.MinValue then Int32.MaxValue else abs x))
