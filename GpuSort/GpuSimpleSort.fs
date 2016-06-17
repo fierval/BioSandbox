@@ -1,4 +1,4 @@
-﻿module GpuSort
+﻿module GpuSimpleSort
 
 open Alea.CUDA
 open Alea.CUDA.Unbound

@@ -59,12 +59,14 @@
     <Error Condition="!Exists('..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets'))" />
   </Target>
   <ItemGroup>
-    <Compile Include="GpuSort.fs" />
+    <Compile Include="GpuSimpleSort.fs" />
+    <Compile Include="GpuBitonicSort.fs" />
     <None Include="SortTest.fsx" />
     <Content Include="packages.config" />
     <None Include="SortDUT.fsx" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
+    <None Include="BitonicSortTest.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">
