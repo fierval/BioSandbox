@@ -60,13 +60,13 @@
   </Target>
   <ItemGroup>
     <Compile Include="GpuSimpleSort.fs" />
-    <Compile Include="GpuBitonicSort.fs" />
+    <Compile Include="BlockScanSample.fs" />
     <None Include="SortTest.fsx" />
     <Content Include="packages.config" />
     <None Include="SortDUT.fsx" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
-    <None Include="BitonicSortTest.fsx" />
+    <None Include="BlockScanSampleTest.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">
