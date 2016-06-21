@@ -1,7 +1,7 @@
 ﻿#load @"Scripts\load-project-debug.fsx"
 
 open FsCheck
-open GpuBitonicSort
+open BlockScanSample
 open System.IO
 open Alea.CUDA
 

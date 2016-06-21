@@ -1,15 +1,4 @@
-﻿#r @"..\..\packages\FsCheck.2.4.0\lib\net45\FsCheck.dll"
-#r @"..\..\packages\Alea.CUDA.2.2.0.3307\lib\net40\Alea.CUDA.dll"
-#r @"..\..\packages\Alea.CUDA.Unbound.2.2.0.3307\lib\net40\Alea.CUDA.Unbound.dll"
-#r @"C:\Git\BioSandbox\Graphs\DrawGraph\bin\Debug\DrawGraph.dll"
-#I @"..\..\packages\Alea.CUDA.2.2.0.3307\lib\net40"
-#I @"..\..\packages\Alea.CUDA.Unbound.2.2.0.3307\lib\net40"
-
-#r @"Alea.CUDA"
-#r @"Alea.CUDA.Unbound"
-
-#load "dirGraph.fs"
-#load "visualizer.fs"
+﻿#load "Scripts/load-project-debug.fsx"
 
 open Graphs
 open FsCheck
@@ -17,6 +6,7 @@ open System
 open System.Text.RegularExpressions
 open System.Diagnostics
 open System.IO
+open DrawGraph
 
 let strs = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
 let strs1 = ["a -> c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
