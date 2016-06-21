@@ -27,6 +27,11 @@ module DirectedGraph =
 
     let getWorker () = if hasCuda.Force() then Some(Device.Default) else None
 
+    let blockSize = 512
+    let worker = Worker.Default
+    let target = GPUModuleTarget.Worker worker
+
+
     // represent the graph as two arrays. For each vertex v, an edge is a tuple
     // start[v], end'[v]
     [<Kernel;ReflectedDefinition>]
