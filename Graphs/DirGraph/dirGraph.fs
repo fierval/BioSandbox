@@ -23,8 +23,20 @@ module DirectedGraph =
             _ ->    false
         )
 
+    let gpuThresh = 1024 * 1024 * 10
+
     let getWorker () = if hasCuda.Force() then Some(Device.Default) else None
 
+    // represent the graph as two arrays. For each vertex v, an edge is a tuple
+    // start[v], end'[v]
+    [<Kernel;ReflectedDefinition>]
+    let toEdgesKernel (rowIndex : deviceptr<int>) len (colIndex : deviceptr<int>) (start : deviceptr<int>) (end' : deviceptr<int>) =
+        let idx = blockIdx.x * blockDim.x + threadIdx.x
+        if idx < len - 1 then
+            for vertex = rowIndex.[idx] to rowIndex.[idx + 1] - 1 do
+                start.[vertex] <- idx
+                end'.[vertex] <- colIndex.[vertex]
+        
     /// <summary>
     /// Instantiate a directed graph. Need number of vertices
     /// Format of the file:
@@ -165,13 +177,14 @@ module DirectedGraph =
             let lines = File.ReadLines(fileName)
             DirectedGraph<string>.FromStrings(lines)                
 
-        member this.Vertices = nVertices
-        member this.Edges = nEdges
+        member this.NumVertices = nVertices
+        member this.NumEdges = nEdges
 
         member this.Item
             with get vertex = ordinalFromName vertex |> getVertexConnections |> Array.map nameFromOrdinal
 
         member this.AsEnumerable = Seq.init nVertices (fun n -> nameFromOrdinal n, this.[nameFromOrdinal n])
+
         member this.Subgraph (vertices : 'a list) = Seq.init (vertices.Count()) (fun i -> vertices.[i], this.[vertices.[i]])
 
         member this.Reverse = reverse.Force()
@@ -194,6 +207,12 @@ module DirectedGraph =
             this.IsConnected && 
                 (this.Reverse.RowIndex = this.RowIndex || hasEulerPath.Force())
         
+        member this.Edges =
+            [|0..nVertices - 1|]
+            |> Array.mapi (fun i v -> getVertexConnections v |> Array.map (fun c -> i, c))
+            |> Array.concat
+            |> Array.unzip
+             
         /// <summary>
         /// Generates a Eulerian graph
         /// </summary>
@@ -246,7 +265,7 @@ module DirectedGraph =
             let oneOnly = defaultArg oneOnly false
 
             let rnd = Random()
-            let mutable vertices = Enumerable.Range(0, this.Vertices) |> Seq.toList
+            let mutable vertices = Enumerable.Range(0, this.NumVertices) |> Seq.toList
             
             [
                 while vertices.Count() > 0 do
@@ -320,7 +339,7 @@ module DirectedGraph =
         override this.Equals g2 =
             match g2 with
             | :? DirectedGraph<'a> as g ->
-                if g.Vertices = this.Vertices then
+                if g.NumVertices = this.NumVertices then
 
                     let grSort (gr : seq<'a * 'a[]>) =
                         gr |> Seq.sortBy fst
@@ -346,4 +365,6 @@ module DirectedGraph =
             | _ -> false
             
         override this.GetHashCode() = this.AsEnumerable.GetHashCode() 
+   
+    type StrGraph = DirectedGraph<string>
                     

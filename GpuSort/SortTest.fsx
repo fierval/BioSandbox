@@ -1,7 +1,7 @@
 ﻿#load @"Scripts\load-project-debug.fsx"
 #load "../packages/FSharp.Charting.0.90.14/FSharp.Charting.fsx"
 
-open GpuSort
+open GpuSimpleSort
 open Alea.CUDA
 open Alea.CUDA.Unbound
 open Alea.CUDA.Utilities

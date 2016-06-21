@@ -84,7 +84,7 @@ module Visualizer =
                 eulerPath.[0].ToString() + "[color=green, style=filled]; " + 
                     (if eulerPath.[0] <> eulerPath.[eulerPath.Length - 1] then 
                         eulerPath.[eulerPath.Length - 1].ToString() + "[color=red, style=filled]; " else String.Empty) + gr
-            |> fun gr -> ("digraph { " + gr + "}") |> if graph.Vertices <= nDotThreshold then visualizeDot else visualizeSfdp
+            |> fun gr -> ("digraph { " + gr + "}") |> if graph.NumVertices <= nDotThreshold then visualizeDot else visualizeSfdp
 
         else 
             let rev = graph.Reverse
@@ -97,7 +97,7 @@ module Visualizer =
                     |> List.map (fun h -> h.AsEnumerable() |> Seq.toList) 
                 else []
 
-            if not clusters then visualizeEntire self selfRev outConMin inConMin (if graph.Vertices <= nDotThreshold then visualizeDot else visualizeSfdp)
+            if not clusters then visualizeEntire self selfRev outConMin inConMin (if graph.NumVertices <= nDotThreshold then visualizeDot else visualizeSfdp)
             else
                 connectedComponents 
                 |> List.mapi
