@@ -13,6 +13,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GpuSort", "GpuSort\GpuSort.
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GpuEuler", "GpuEuler\GpuEuler.fsproj", "{3359D25F-850A-47C3-A662-8FB2E96A16BC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandbox", "Sandbox", "{641E05F2-0561-419F-A3FA-BB143CEDD045}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CAA4EB40-CEE8-4910-86E5-FFBC1ECC8E89} = {641E05F2-0561-419F-A3FA-BB143CEDD045}
+		{8437015F-05C1-4A5F-9FB2-C115236E659C} = {641E05F2-0561-419F-A3FA-BB143CEDD045}
+		{3359D25F-850A-47C3-A662-8FB2E96A16BC} = {641E05F2-0561-419F-A3FA-BB143CEDD045}
 	EndGlobalSection
 EndGlobal

@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="successor.fs" />
     <None Include="GpuEulerTests.fsx" />
+    <None Include="Perf.fsx" />
     <Content Include="packages.config" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />

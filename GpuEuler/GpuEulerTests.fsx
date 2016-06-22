@@ -7,6 +7,7 @@ open DataGen
 open System
 open System.IO
 open FsCheck
+open GpuGoodies
 
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\release")
@@ -18,7 +19,7 @@ type EulerCycle =
     static member ``Edge Representation on GPU`` (gr : DirectedGraph<string>) =
         let start, end' = gr.Edges
 
-        let dStart, dEnd = getEdgesGpu gr
+        let dStart, dEnd = getEdgesGpu gr.RowIndex gr.ColIndex
         let startGpu, endGpu = dStart.Gather(), dEnd.Gather()
         start = startGpu && end' = endGpu
 
@@ -30,8 +31,8 @@ type EulerCycle =
             |> Array.unzip
 
         let startGpu, endGpu =
-            let dStart, dEnd = getEdgesGpu gr
-            sortStartEnd dStart dEnd gr.NumEdges
+            let dStart, dEnd = getEdgesGpu gr.RowIndex gr.ColIndex
+            sortStartEnd dStart dEnd
 
         startCpu = startGpu && endCpu = endGpu
 

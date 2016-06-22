@@ -52,6 +52,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="GpuGoodies.fs" />
     <Compile Include="dirGraph.fs" />
     <Compile Include="visualizer.fs" />
     <Compile Include="DataGen.fs" />
