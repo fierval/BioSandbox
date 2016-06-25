@@ -10,3 +10,7 @@ Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIREC
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\release")
 
 let genNonNeg = Arb.generate<int> |> Gen.filter ((<=) 0)
+
+let arr = [|0..10000|]
+
+bs.Apply(arr)

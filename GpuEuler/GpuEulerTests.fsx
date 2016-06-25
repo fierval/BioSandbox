@@ -36,9 +36,8 @@ type EulerCycle =
 
         startCpu = startGpu && endCpu = endGpu
 
-Arb.registerByType(typeof<EulerCycle>)
-Check.QuickAll(typeof<EulerCycle>)
+//Arb.registerByType(typeof<EulerCycle>)
+//Check.QuickAll(typeof<EulerCycle>)
 
-let digr = graphGen 3 100
-let graphs = digr.Sample(3, 100)
-
+let dStart, dEnd = successors gr
+let grp = getRevRowIndex dEnd gr.NumVertices

@@ -22,6 +22,12 @@ module GpuGoodies =
     let worker = Worker.Default
     let target = GPUModuleTarget.Worker worker
 
+    [<Kernel; ReflectedDefinition>]
+    let copyGpu (source : deviceptr<'a>) (dest : deviceptr<'a>) len =
+        let idx = blockIdx.x * blockDim.x + threadIdx.x
+        if idx < len - 1 then
+            dest.[idx] <- source.[idx]
+                    
     // represent the graph as two arrays. For each vertex v, an edge is a tuple
     // start[v], end'[v]
     [<Kernel;ReflectedDefinition>]
@@ -71,8 +77,12 @@ module GpuGoodies =
             else getNextPowerOfTwoRec (n >>> 1) (acc + 1)
 
         getNextPowerOfTwoRec n 0
-
-    let sortStartEnd (dStart : DeviceMemory<int>) (dEnd : DeviceMemory<int>) =
+    /// <summary>
+    /// Sort by end vertices
+    /// </summary>
+    /// <param name="dStart"></param>
+    /// <param name="dEnd"></param>
+    let sortStartEndGpu (dStart : DeviceMemory<int>) (dEnd : DeviceMemory<int>) =
         let len = dStart.Length
 
         let lp = LaunchParam(divup len blockSize, blockSize)
@@ -85,8 +95,8 @@ module GpuGoodies =
 
         use dBits = worker.Malloc(len)
         use numFalses = worker.Malloc(len)
-        use dStartTemp = worker.Malloc(len)
-        use dEndTemp = worker.Malloc(len)
+        let dStartTemp = worker.Malloc(len)
+        let dEndTemp = worker.Malloc(len)
 
         // Number of iterations = bit count of the maximum number
         let numIter = reducer.Reduce(dEnd.Ptr, len) |> getBitCount
@@ -106,5 +116,8 @@ module GpuGoodies =
             // scatter
             worker.Launch <@ scatter @> lp start.Ptr end'.Ptr len numFalses.Ptr dBits.Ptr outStart.Ptr outEnd.Ptr
     
-        let outStart, outEnd = getOutArr (numIter - 1)
+        getOutArr (numIter - 1)
+        
+    let sortStartEnd (dStart : DeviceMemory<int>) (dEnd : DeviceMemory<int>) =
+        let outStart, outEnd = sortStartEndGpu dStart dEnd
         outStart.Gather(), outEnd.Gather()

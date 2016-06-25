@@ -54,10 +54,10 @@ let sort (arr : int []) =
         use scanModule = new DeviceScanModule<int>(target, <@ (+) @>)
         use scanner = scanModule.Create(len)
 
-        use dArr = worker.Malloc(arr)
+        let dArr = worker.Malloc(arr)
         use dBits = worker.Malloc(len)
         use numFalses = worker.Malloc(len)
-        use dArrTemp = worker.Malloc(len)
+        let dArrTemp = worker.Malloc(len)
 
         // Number of iterations = bit count of the maximum number
         let numIter = reducer.Reduce(dArr.Ptr, len) |> getBitCount
