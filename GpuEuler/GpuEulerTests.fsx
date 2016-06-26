@@ -20,39 +20,13 @@ let genEuler =
         return StrGraph.GenerateEulerGraph(5, 30)
 }
 
-//type EulerCycle =
-//    static member digr = graphGen 3 100 |> Arb.fromGen
-//    static member ``Edge Representation on GPU`` (gr : DirectedGraph<string>) =
-//        let start, end' = gr.Edges
-//
-//        let dStart, dEnd = getEdgesGpu gr.RowIndex gr.ColIndex
-//        let startGpu, endGpu = dStart.Gather(), dEnd.Gather()
-//        start = startGpu && end' = endGpu
-//
-//    static member ``Sort ordinal end edges on GPU`` (gr : DirectedGraph<string>) =
-//        let startCpu, endCpu =
-//            gr.Edges
-//            ||> Array.zip
-//            |> Array.sortBy (fun (x, y) -> y, x)
-//            |> Array.unzip
-//
-//        let startGpu, endGpu =
-//            let dStart, dEnd = getEdgesGpu gr.RowIndex gr.ColIndex
-//            sortStartEnd dStart dEnd
-//
-//        startCpu = startGpu && endCpu = endGpu
+type EulerCycle =
+    static member digr = genEuler |> Arb.fromGen
+    static member ``Reverse Euler Graph on GPU`` (gr : DirectedGraph<string>) =
+        let _, _, dRevRowIndex = reverse gr
+        let revRowIndex = dRevRowIndex.Gather()
 
-//Arb.registerByType(typeof<EulerCycle>)
-//Check.QuickAll(typeof<EulerCycle>)
+        revRowIndex = gr.Reverse.RowIndex
 
-
-let dStart, dEnd = successors gr
-let grp = getRevRowIndex dEnd gr.NumVertices
-
-let compacted = compact grp
-
-//let ends = dEnd.Gather()
-//
-//let eg = ends |> Array.groupBy id |> Array.map (fun (key, v) -> v.Length)
-let ag = grp |> Array.filter ((<>) 0)
-compacted = ag
+Arb.registerByType(typeof<EulerCycle>)
+Check.QuickAll(typeof<EulerCycle>)

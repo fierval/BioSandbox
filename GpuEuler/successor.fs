@@ -9,12 +9,13 @@ open Graphs.GpuGoodies
 open System.Linq
 open System.Collections.Generic
 open System
+open GpuCompact
 
 let worker = Worker.Default
 
 /// <summary>
 /// Groups counts of values in a sorted array together:
-/// 1 1 1 2 2 2 2 3 3... -> 0 0 3 0 0 0 4 0 2 ...
+/// 1 1 1 2 2 2 2 3 3... -> 3 0 0 4 0 0 0 2 ...
 /// </summary>
 /// <param name="ends"></param>
 /// <param name="len"></param>
@@ -67,24 +68,37 @@ let createReverseEuler (gr : StrGraph) =
 
     StrGraph(revRowIndex, start, gr.NamedVertices)
 
-let getRevRowIndex (dEnd : DeviceMemory<int>) nVertices =
+let getRevRowIndex (dEnd : DeviceMemory<int>) =
     let len = dEnd.Length
     let lp = LaunchParam (divup len blockSize, blockSize)
 
     let dGrouped = worker.Malloc(Array.zeroCreate len)
 
     worker.Launch <@ groupSortedNums @> lp dEnd.Ptr len dGrouped.Ptr
-
-    dGrouped.Gather()
+    dGrouped
 
 /// <summary>
 /// Given an Eulerian graph - assign successors
 /// </summary>
 /// <param name="gr"></param>
-let successors (gr : StrGraph) =
+let reverse (gr : StrGraph) =
     if not gr.IsEulerian then failwith "Not Eulerian"
 
-    let dStart, dEnd = getEdgesGpu gr.RowIndex gr.ColIndex ||> sortStartEndGpu
+    let dStart, dEnd = 
+        getEdgesGpu gr.RowIndex gr.ColIndex 
+        ||> sortStartEndGpu
 
-    dStart, dEnd
+    // Get the row index of the reverse graph
+    let dGrouped = getRevRowIndex dEnd
+    let dCompacted = compactGpu dGrouped
+
+    // Row index of the reversed graph will be a scan of the compacted array
+    use scanModule = new DeviceScanModule<int>(GPUModuleTarget.Worker(worker), <@ (+) @>)
+    use scanner = scanModule.Create(dCompacted.Length)
+
+    let dRevRowIndex = worker.Malloc(dCompacted.Length + 1)
+    dRevRowIndex.ScatterScalar(0)
+    scanner.InclusiveScan(dCompacted.Ptr, dRevRowIndex.Ptr + 1, dCompacted.Length)
+
+    dStart, dEnd, dRevRowIndex
 
