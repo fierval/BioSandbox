@@ -12,7 +12,7 @@ open GpuGoodies
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\release")
 
-let gr = StrGraph.GenerateEulerGraph(20, 1)
+let gr = StrGraph.GenerateEulerGraph(20, 3)
 
 //type EulerCycle =
 //    static member digr = graphGen 3 100 |> Arb.fromGen
