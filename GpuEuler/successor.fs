@@ -78,7 +78,8 @@ let getRevRowIndex (dEnd : DeviceMemory<int>) =
     dGrouped
 
 /// <summary>
-/// Given an Eulerian graph - assign successors
+/// Given an Eulerian graph - create start, end and rowIndex arrays
+/// The "end" array will be the colIndex array for the reversed graph
 /// </summary>
 /// <param name="gr"></param>
 let reverse (gr : StrGraph) =
@@ -101,4 +102,3 @@ let reverse (gr : StrGraph) =
     scanner.InclusiveScan(dCompacted.Ptr, dRevRowIndex.Ptr + 1, dCompacted.Length)
 
     dStart, dEnd, dRevRowIndex
-
