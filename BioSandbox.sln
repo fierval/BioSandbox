@@ -15,6 +15,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GpuEuler", "GpuEuler\GpuEul
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandbox", "Sandbox", "{641E05F2-0561-419F-A3FA-BB143CEDD045}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GpuCompact", "GpuCompact\GpuCompact.fsproj", "{0DBDEA6C-0796-40F8-9C21-DD0598B213C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{3359D25F-850A-47C3-A662-8FB2E96A16BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3359D25F-850A-47C3-A662-8FB2E96A16BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3359D25F-850A-47C3-A662-8FB2E96A16BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DBDEA6C-0796-40F8-9C21-DD0598B213C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DBDEA6C-0796-40F8-9C21-DD0598B213C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DBDEA6C-0796-40F8-9C21-DD0598B213C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DBDEA6C-0796-40F8-9C21-DD0598B213C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

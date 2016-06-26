@@ -14,3 +14,4 @@
 #r "../../../../Emgu/emgucv-windesktop_x64-cuda 3.1.0.2282/bin/Emgu.CV.UI.dll"
 #r "../../../../Emgu/emgucv-windesktop_x64-cuda 3.1.0.2282/bin/Emgu.CV.World.dll"
 #r "../../Graphs/DirGraph/bin/Debug/DirGraph.dll"
+#r "../../GpuCompact/bin/Debug/GpuCompact.dll"

@@ -8,11 +8,17 @@ open System
 open System.IO
 open FsCheck
 open GpuGoodies
+open GpuCompact
 
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\release")
 
 let gr = StrGraph.GenerateEulerGraph(20, 3)
+
+let genEuler = 
+    gen {
+        return StrGraph.GenerateEulerGraph(5, 30)
+}
 
 //type EulerCycle =
 //    static member digr = graphGen 3 100 |> Arb.fromGen
@@ -39,10 +45,14 @@ let gr = StrGraph.GenerateEulerGraph(20, 3)
 //Arb.registerByType(typeof<EulerCycle>)
 //Check.QuickAll(typeof<EulerCycle>)
 
+
 let dStart, dEnd = successors gr
 let grp = getRevRowIndex dEnd gr.NumVertices
-let ends = dEnd.Gather()
 
-let eg = ends |> Array.groupBy id |> Array.map (fun (key, v) -> v.Length)
+let compacted = compact grp
+
+//let ends = dEnd.Gather()
+//
+//let eg = ends |> Array.groupBy id |> Array.map (fun (key, v) -> v.Length)
 let ag = grp |> Array.filter ((<>) 0)
-eg = ag
+compacted = ag
