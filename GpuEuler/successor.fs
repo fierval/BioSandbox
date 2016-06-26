@@ -13,7 +13,7 @@ let worker = Worker.Default
 
 /// <summary>
 /// Groups counts of values in a sorted array together:
-/// 1 1 1 2 2 2 2 3 3... -> 0 0 0 3 0 0 0 0 4 0 0 2 ...
+/// 1 1 1 2 2 2 2 3 3... -> 0 0 3 0 0 0 4 0 2 ...
 /// </summary>
 /// <param name="ends"></param>
 /// <param name="len"></param>
@@ -24,15 +24,19 @@ let groupSortedNums (ends : deviceptr<int>) len (grouped : deviceptr<int>) =
 
     if idx < len then
         if (idx <> 0 && idx < len && ends.[idx - 1] <> ends.[idx]) || idx = len - 1 then
-            let mutable n = 0
+            // corner case: something like at the very end: ...17, 17, 17, 18, 19.
+            // we will need to account for both the final elements
+            if idx = len - 1 && ends.[idx] <> ends.[idx - 1] then
+                grouped.[idx] <- 1
+            let mutable n = if idx = len - 1 then 1 else 0
             let cur = ends.[idx - 1]
             idx <- idx - 1
             while idx >= 0 && ends.[idx] = cur do
                 idx <- idx - 1
                 n <- n + 1
-            ends.[idx] <- n 
+            grouped.[idx + 1] <- n
         else
-            ends.[idx] <- 0
+            grouped.[idx] <- 0
 
 /// <summary>
 /// Assigns successors of all edges:
