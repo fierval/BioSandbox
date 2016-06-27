@@ -37,21 +37,6 @@ let groupSortedNums (ends : deviceptr<int>) len (grouped : deviceptr<int>) =
             grouped.[idx] <- 0
 
 /// <summary>
-/// Assigns successors of all edges:
-/// 1 -> 2 is a successor of edge 3 -> 1
-/// </summary>
-/// <param name="starts">Array of edges starts</param>
-/// <param name="len">num of vertices</param>
-/// <param name="curPointers">"rowIndex" array of ending vertices</param>
-/// <param name="successors">array of successors</param>
-[<Kernel; ReflectedDefinition>]
-let assignSuccessors (starts : deviceptr<int>) len (curPointers : deviceptr<int>) (successors : deviceptr<int>) =
-    let mutable idx = blockIdx.x * blockDim.x + threadIdx.x
-    if idx <= len then
-        successors.[curPointers.[starts.[idx]]] <- idx
-        __atomic_add (curPointers + starts.[idx]) 1 |> ignore
-
-/// <summary>
 /// Same thing as graph.Reverse, however, since we know we are dealing with
 /// an Euler graph this function is much faster
 /// </summary>
@@ -82,8 +67,10 @@ let getRevRowIndex (dEnd : DeviceMemory<int>) =
 /// The "end" array will be the colIndex array for the reversed graph
 /// </summary>
 /// <param name="gr"></param>
-let reverse (gr : StrGraph) =
-    if not gr.IsEulerian then failwith "Not Eulerian"
+let reverseGpu (gr : StrGraph) =
+
+    // TODO: This needs to be made more efficient
+    //if not gr.IsEulerian then failwith "Not Eulerian"
 
     let dStart, dEnd = 
         getEdgesGpu gr.RowIndex gr.ColIndex 
@@ -102,3 +89,20 @@ let reverse (gr : StrGraph) =
     scanner.InclusiveScan(dCompacted.Ptr, dRevRowIndex.Ptr + 1, dCompacted.Length)
 
     dStart, dEnd, dRevRowIndex
+
+let reverse (gr : StrGraph) =
+    let dStart, dEnd, dRevRowIndex = reverseGpu gr
+    StrGraph(dRevRowIndex.Gather(), dStart.Gather(), gr.NamedVertices)
+
+let successors (dStart : DeviceMemory<int>) (dRowIndex : DeviceMemory<int>) =
+    let rowIndex = dRowIndex.Gather()
+    let starts = dStart.Gather()
+    let successors = Array.zeroCreate starts.Length
+
+    [|0..starts.Length - 1|] 
+    |> Array.iter
+        (fun i -> 
+            successors.[rowIndex.[starts.[i]]] <- i
+            rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
+        )
+    successors
