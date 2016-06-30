@@ -10,6 +10,7 @@ open FsCheck
 open GpuGoodies
 open GpuCompact
 open System.Diagnostics
+open System
 
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\release")
@@ -42,6 +43,6 @@ let genEuler =
 
 sw.Restart()
 let dStart, dEnd, dRevRowIndex = reverseGpu gr
-let succ = successors dStart dRevRowIndex
+//let succ = successors dStart dRevRowIndex
 sw.Stop()
 printfn "Successors generated in: %A" sw.Elapsed
