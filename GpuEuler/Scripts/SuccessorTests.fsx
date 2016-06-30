@@ -12,18 +12,14 @@ open GpuCompact
 open System.Diagnostics
 open System
 
-Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\packages\Alea.Cuda.2.2.0.3307\private")
-Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\release")
+Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
+Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
 // warm up the gpu
 StrGraph.GenerateEulerGraph(10, 2) |> reverseGpu |> ignore
 
-let n = 1024 * 1024 * 15
-let sw = Stopwatch()
-sw.Start()
+let n = 20
 let gr = StrGraph.GenerateEulerGraph(n, 5)
-sw.Stop()
-printfn "Generated: %A: " sw.Elapsed
 
 let genEuler = 
     gen {
@@ -41,8 +37,5 @@ let genEuler =
 //Arb.registerByType(typeof<EulerCycle>)
 //Check.QuickAll(typeof<EulerCycle>)
 
-sw.Restart()
 let dStart, dEnd, dRevRowIndex = reverseGpu gr
-//let succ = successors dStart dRevRowIndex
-sw.Stop()
-printfn "Successors generated in: %A" sw.Elapsed
+let succ = successors dStart dRevRowIndex
