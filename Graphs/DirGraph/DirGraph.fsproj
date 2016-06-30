@@ -56,12 +56,12 @@
     <Compile Include="dirGraph.fs" />
     <Compile Include="visualizer.fs" />
     <Compile Include="DataGen.fs" />
-    <None Include="dirGraphPropertyTest.fsx" />
-    <None Include="dirGraphTest.fsx" />
     <Content Include="packages.config" />
     <None Include="debruijn.fsx" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
+    <None Include="Scripts\dirGraphPropertyTest.fsx" />
+    <None Include="Scripts\dirGraphTest.fsx" />
     <None Include="rosalindEuler.fsx" />
   </ItemGroup>
   <ItemGroup>

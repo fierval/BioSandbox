@@ -1,4 +1,4 @@
-﻿#load "Scripts/load-project-debug.fsx"
+﻿#load "load-project-debug.fsx"
 
 open Graphs
 open FsCheck
@@ -26,13 +26,15 @@ let grs = StrGraph.FromStrings sparse
 
 let euler = StrGraph.GenerateEulerGraph(12, 3, path=true)
 
-Visualizer.Visualize(grs)
-Visualizer.Visualize(grs.Reverse)
+//Visualizer.Visualize(grs)
+//Visualizer.Visualize(grs.Reverse)
 Visualizer.Visualize(grs, clusters = true)
-Visualizer.Visualize(gr, clusters = true)
+//Visualizer.Visualize(gr, clusters = true)
 Visualizer.Visualize(euler, euler=true)
 
 let strsr = ["0 -> 3"; "1 -> 0"; "2 -> 1,6"; "3 -> 2"; "4 -> 2"; "5 -> 4"; "6 -> 5,8"; "7 -> 9"; "8 -> 7"; "9 -> 6"]
 let grr = StrGraph.FromStrings strsr
 
-Visualizer.Visualize(grr, euler=true)
+//Visualizer.Visualize(grr, euler=true)
+grs.Edges
+grs.Partition()

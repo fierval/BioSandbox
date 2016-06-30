@@ -192,13 +192,22 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     member this.IsEulerian = 
         this.IsConnected && 
             (this.Reverse.RowIndex = this.RowIndex || hasEulerPath.Force())
-        
-    member this.Edges =
+
+    /// <summary>
+    /// Array of tuples of edge ordinals
+    /// </summary>
+    member this.OrdinalEdges = 
         [|0..nVertices - 1|]
-        |> Array.mapi (fun i v -> getVertexConnections v |> Array.map (fun c -> i, c))
+        |> Array.map (fun v -> getVertexConnections v |> Array.map (fun c -> v, c))
         |> Array.concat
-        |> Array.unzip
-             
+            
+    /// <summary>
+    /// Array of tuples of all graph edges
+    /// </summary>
+    member this.Edges =
+        this.OrdinalEdges
+        |> Array.map (fun (start, end') -> verticesOrdinalToNames.[start], verticesOrdinalToNames.[end'])
+    
     /// <summary>
     /// Generates a Eulerian graph
     /// </summary>
@@ -247,44 +256,17 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// <summary>
     /// Finds all connected components and returns them as a list of vertex sets.
     /// </summary>
-    member this.FindConnectedComponents (?oneOnly) =
-        let oneOnly = defaultArg oneOnly false
-
-        let rnd = Random()
-        let mutable vertices = Enumerable.Range(0, this.NumVertices) |> Seq.toList
-            
-        [
-            while vertices.Count() > 0 do
-                let idx = vertices.[rnd.Next(vertices.Count())]
-                    
-                let connected = 
-                    List.unfold 
-                        (fun (prevVertices : HashSet<int>, visited) -> 
-                            let visitVerts = 
-                                visited 
-                                |> Array.map (this.GetAllConnections >> Seq.toArray) 
-                                |> Array.concat |> Array.distinct
-                                |> fun a -> a.Except prevVertices |> Seq.toArray
-                            let prevLen = prevVertices.Count                                        
-                            visitVerts |> Array.iter (prevVertices.Add >> ignore)
-                            if prevVertices.Count = prevLen then None
-                            else Some(prevVertices, (prevVertices, visitVerts))
-                        ) (HashSet<int>([idx]), [|idx|]) 
-                    |> List.take 1
-                    |> List.exactlyOne
-
-                vertices <- if oneOnly then [] else vertices.Except connected |> Seq.toList
-
-                yield connected |> Seq.map (fun i -> verticesOrdinalToNames.[i]) |> Seq.toList
-        ]
+    member this.FindConnectedComponents () =
+        this.Partition()
+        |> Array.zip [|0..nVertices - 1|]
+        |> Array.groupBy snd
+        |> Array.map (fun (_, color) -> 
+            color |> Array.map (fun (v, c) -> verticesOrdinalToNames.[v]) )
             
     // GPU worker                                                    
     member private this.Worker = getWorker()
 
-    member this.IsConnected = 
-        this.FindConnectedComponents (oneOnly = true) 
-        |> List.exactlyOne 
-        |> fun l -> l.Length = verticesNameToOrdinal.Count
+    member this.IsConnected = this.Partition() |> Array.distinct |> Array.length |> ((=) 1)
       
     member this.FindEulerPath () =
         if not this.IsEulerian then []
@@ -321,7 +303,36 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
                         visited.Add(curVertex, this.GetConnectedVertices curVertex)
 
             start::cycle |> List.map (fun i -> verticesOrdinalToNames.[i])
-                        
+
+    /// <summary>
+    /// Edge-based partitioning of the graph into connected components
+    /// </summary>
+    member this.Partition () =
+        let goOn = Array.create nVertices true
+        let colors = [|0..nVertices - 1|]
+
+        let rec partitionAdjeceny vertex j flag (vertices : int [])=
+            if j = vertices.Length then ()
+            else
+                goOn.[vertex] <- flag
+                if colors.[vertex] > colors.[vertices.[j]] then
+                    colors.[vertex] <- colors.[vertices.[j]]
+                    partitionAdjeceny vertex 0 goOn.[vertex] vertices 
+                elif colors.[vertex] < colors.[vertices.[j]]
+                then
+                    colors.[vertices.[j]] <- colors.[vertex]
+                    partitionAdjeceny vertices.[j] 0 false  (getVertexConnections vertices.[j])
+                    partitionAdjeceny vertex (j + 1) goOn.[vertex] vertices
+                else
+                    partitionAdjeceny vertex (j + 1) goOn.[vertex] vertices
+                                
+
+        for vertex in [0..nVertices - 1] do
+            if goOn.[vertex] then
+                partitionAdjeceny vertex 0 false  (getVertexConnections vertex) 
+
+        colors
+
     override this.Equals g2 =
         match g2 with
         | :? DirectedGraph<'a> as g ->

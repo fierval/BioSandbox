@@ -94,19 +94,19 @@ module Visualizer =
             let connectedComponents = 
                 if clusters then 
                     graph.FindConnectedComponents() 
-                    |> List.map (fun h -> h.AsEnumerable() |> Seq.toList) 
-                else []
+                    |> Array.map (fun h -> h.AsEnumerable() |> Seq.toList) 
+                else [||]
 
             if not clusters then visualizeEntire self selfRev outConMin inConMin (if graph.NumVertices <= nDotThreshold then visualizeDot else visualizeSfdp)
             else
                 connectedComponents 
-                |> List.mapi
+                |> Array.mapi
                     (fun i vertices ->
                         let subgraph = vertices |> graph.Subgraph
                         let subgraphRev = vertices |> rev.Subgraph
                         visualizeSubgraph subgraph subgraphRev outConMin inConMin i
                     )
-                |> List.reduce (+)
+                |> Array.reduce (+)
                 |> fun gr -> createVisualClusters ("digraph { " + gr + "}") 
                             
     type Visualizer () =
