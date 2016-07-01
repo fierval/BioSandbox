@@ -26,5 +26,5 @@ let graphGen len number =
         |> Gen.map (Array.distinctBy fst)
         |> Gen.map (fun arr ->  arr |> Array.map (fun (a, b) -> a + " -> " + b))
     )
-    |> Gen.map DirectedGraph<string>.FromStrings
+    |> Gen.map StrGraph.FromStrings
 

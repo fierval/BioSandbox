@@ -4,4 +4,5 @@
 #load "../GpuGoodies.fs"
       "../dirGraph.fs"
       "../visualizer.fs"
+      "../Generators.fs"
       "../DataGen.fs"

@@ -61,12 +61,12 @@
   <ItemGroup>
     <Compile Include="GpuSimpleSort.fs" />
     <Compile Include="BlockScanSample.fs" />
-    <None Include="SortTest.fsx" />
     <Content Include="packages.config" />
-    <None Include="SortDUT.fsx" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
-    <None Include="BlockScanSampleTest.fsx" />
+    <None Include="Scripts\SortTest.fsx" />
+    <None Include="Scripts\SortDUT.fsx" />
+    <None Include="Scripts\BlockScanSampleTest.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">

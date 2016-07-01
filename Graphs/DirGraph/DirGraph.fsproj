@@ -55,14 +55,15 @@
     <Compile Include="GpuGoodies.fs" />
     <Compile Include="dirGraph.fs" />
     <Compile Include="visualizer.fs" />
+    <Compile Include="Generators.fs" />
     <Compile Include="DataGen.fs" />
     <Content Include="packages.config" />
-    <None Include="debruijn.fsx" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
     <None Include="Scripts\dirGraphPropertyTest.fsx" />
     <None Include="Scripts\dirGraphTest.fsx" />
-    <None Include="rosalindEuler.fsx" />
+    <None Include="Scripts\debruijn.fsx" />
+    <None Include="Scripts\rosalindEuler.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">

@@ -108,14 +108,17 @@ module Visualizer =
                     )
                 |> Array.reduce (+)
                 |> fun gr -> createVisualClusters ("digraph { " + gr + "}") 
-                            
-    type Visualizer () =
+    
+    /// <summary>
+    /// Visualizer extenstion
+    /// </summary>
+    type DirectedGraph<'a when 'a: comparison> with
         /// <summary>
         /// Visualize the graph. Should in/out connections be emphasized
         /// </summary>
         /// <param name="into">Optional. If present - should be the minimum number of inbound connections which would select the vertex for coloring.</param>
         /// <param name="out">Optional. If present - should be the minimum number of outbound connections which would select the vertex for coloring.</param>
-        static member Visualize(graph : DirectedGraph<'a>, ?into, ?out, ?clusters, ?euler, ?eulerLabels : string seq) =
+        member graph.Visualize(?into, ?out, ?clusters, ?euler, ?eulerLabels : string seq) =
             let outConMin = defaultArg out 0
             let inConMin = defaultArg into 0
             let clusters = defaultArg clusters false

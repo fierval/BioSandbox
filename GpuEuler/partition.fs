@@ -39,6 +39,30 @@
                     __atomic_min (colors + j) colorI |> ignore
 
         /// <summary>
+        /// Kernel that does edge-based partitioning on a linear graph
+        /// Algorithm 2 from http://www.massey.ac.nz/~dpplayne/Papers/cstn-089.pdf
+        /// </summary>
+        /// <param name="end'">Edge ends</param>
+        /// <param name="colors">Colors</param>
+        /// <param name="len">length of end' array - # of edges</param>
+        /// <param name="stop">Should we continue?</param>
+        [<Kernel; ReflectedDefinition>]
+        let partionLinearGraphKernel (end': deviceptr<int>) (colors : deviceptr<int>) len (go : deviceptr<bool>) = 
+            let idx = blockDim.x * blockIdx.x + threadIdx.x
+
+            if idx < len then
+                let i, j = idx, end'.[idx]
+                let colorI, colorJ = colors.[i], colors.[j]
+
+                if colorJ < colorI then
+                    go.[0] <- true
+                    __atomic_min (colors + i) colorJ |> ignore
+
+                elif colorI < colorJ then
+                    go.[0] <- true
+                    __atomic_min (colors + j) colorI |> ignore
+
+        /// <summary>
         /// Run the partitioning kernel
         /// </summary>
         /// <param name="dStart">Starting points of edges</param>
@@ -53,5 +77,24 @@
             while dGo.GatherScalar() do
                 dGo.Scatter([|false|])
                 worker.Launch <@ partionKernel @> lp dStart.Ptr dEnd.Ptr dColor.Ptr dStart.Length dGo.Ptr
+
+            dColor
+
+        /// <summary>
+        /// Run the partitioning kernel
+        /// </summary>
+        /// <param name="dStart">Starting points of edges</param>
+        /// <param name="dEnd">Ending points of edges</param>
+        /// <param name="nVertices">Num of graph vertices</param>
+        let partitionLinear (end' : int []) =
+            let lp = LaunchParam(divup end'.Length blockSize, blockSize)
+
+            let dColor = worker.Malloc([|0..end'.Length - 1|])
+            use dEnd = worker.Malloc(end')
+            use dGo = worker.Malloc([|true|])
+
+            while dGo.GatherScalar() do
+                dGo.Scatter([|false|])
+                worker.Launch <@ partionLinearGraphKernel @> lp dEnd.Ptr dColor.Ptr dEnd.Length dGo.Ptr
 
             dColor
