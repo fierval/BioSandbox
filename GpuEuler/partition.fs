@@ -38,30 +38,6 @@
                     go.[0] <- true
                     __atomic_min (colors + j) colorI |> ignore
 
-        let par (start : int []) (end' : int []) (colors : int []) =
-            let mutable go = false
-            for k = 0 to start.Length - 1 do
-                let i, j = start.[k], end'.[k]
-                let colorI, colorJ = colors.[i], colors.[j]
-
-                if colorJ < colorI then
-                    go <- colorI <> colorJ
-                    colors.[i] <- colors.[j]
-
-                elif colorI < colorJ then
-                    go <- colorI <> colorJ
-                    colors.[j] <- colors.[i]
-            go
-                
-        let partionDebug (start : int []) (end' : int []) verts =
-            let colors = [|0..verts - 1|]
-            let mutable go = par start end' colors
-
-            while go do
-                go <- par start end' colors
-            
-            colors
-
         /// <summary>
         /// Run the partitioning kernel
         /// </summary>
