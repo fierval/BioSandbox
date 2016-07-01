@@ -20,10 +20,18 @@ Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, 
 
 let gener = graphGen 4 10
 
-let gr = gener.Sample(20, 1).[0]
+let gr = gener.Sample(2000, 1).[0]
 
+let sw = Stopwatch()
+sw.Start()
 let dStart, dEnd = getEdgesGpu gr.RowIndex gr.ColIndex
 let color = partitionGpu dStart dEnd gr.NumVertices
 let colors = color.Gather()
+sw.Stop()
+let eg = sw.Elapsed
+sw.Restart()
+gr.Partition()
+sw.Stop()
 
-colors = gr.Partition()
+printfn "Vertices: %d, Edges: %d, CPU: %A, GPU: %A" gr.NumVertices gr.NumEdges sw.Elapsed eg
+
