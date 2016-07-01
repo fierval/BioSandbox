@@ -311,25 +311,26 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
         let goOn = Array.create nVertices true
         let colors = [|0..nVertices - 1|]
 
-        let rec partitionAdjeceny vertex j flag (vertices : int [])=
+        let rec partitionAdjeceny vertex j (vertices : int [])=
+            goOn.[vertex] <- false
             if j = vertices.Length then ()
             else
-                goOn.[vertex] <- flag
                 if colors.[vertex] > colors.[vertices.[j]] then
                     colors.[vertex] <- colors.[vertices.[j]]
-                    partitionAdjeceny vertex 0 goOn.[vertex] vertices 
+                    partitionAdjeceny vertex 0 vertices 
+
                 elif colors.[vertex] < colors.[vertices.[j]]
                 then
                     colors.[vertices.[j]] <- colors.[vertex]
-                    partitionAdjeceny vertices.[j] 0 false  (getVertexConnections vertices.[j])
-                    partitionAdjeceny vertex (j + 1) goOn.[vertex] vertices
+                    partitionAdjeceny vertices.[j] 0  (getVertexConnections vertices.[j])
+                    partitionAdjeceny vertex 0 vertices
                 else
-                    partitionAdjeceny vertex (j + 1) goOn.[vertex] vertices
+                    partitionAdjeceny vertex (j + 1) vertices
                                 
 
         for vertex in [0..nVertices - 1] do
             if goOn.[vertex] then
-                partitionAdjeceny vertex 0 false  (getVertexConnections vertex) 
+                partitionAdjeceny vertex 0 (getVertexConnections vertex) 
 
         colors
 
