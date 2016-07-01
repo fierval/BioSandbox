@@ -89,6 +89,33 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             pref.Length <> rows.Length && remains.Length + middle.Length + pref.Length = rows.Length
         )
         
+    let partitionLinear () =
+        let goOn = Array.create nVertices true
+        let colors = [|0..nVertices - 1|]
+
+        let rec partitionAdjeceny vertex j (vertices : int [])=
+            goOn.[vertex] <- false
+            if j = vertices.Length then ()
+            else
+                if colors.[vertex] > colors.[vertices.[j]] then
+                    colors.[vertex] <- colors.[vertices.[j]]
+                    partitionAdjeceny vertex 0 vertices 
+
+                elif colors.[vertex] < colors.[vertices.[j]]
+                then
+                    colors.[vertices.[j]] <- colors.[vertex]
+                    partitionAdjeceny vertices.[j] 0  (getVertexConnections vertices.[j])
+                    partitionAdjeceny vertex 0 vertices
+                else
+                    partitionAdjeceny vertex (j + 1) vertices
+                                
+
+        for vertex in [0..nVertices - 1] do
+            if goOn.[vertex] then
+                partitionAdjeceny vertex 0 (getVertexConnections vertex) 
+
+        colors
+
     /// <summary>
     /// Create the graph from an array of strings
     /// </summary>
@@ -308,31 +335,12 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// Edge-based partitioning of the graph into connected components
     /// </summary>
     member this.Partition () =
-        let goOn = Array.create nVertices true
-        let colors = [|0..nVertices - 1|]
-
-        let rec partitionAdjeceny vertex j (vertices : int [])=
-            goOn.[vertex] <- false
-            if j = vertices.Length then ()
-            else
-                if colors.[vertex] > colors.[vertices.[j]] then
-                    colors.[vertex] <- colors.[vertices.[j]]
-                    partitionAdjeceny vertex 0 vertices 
-
-                elif colors.[vertex] < colors.[vertices.[j]]
-                then
-                    colors.[vertices.[j]] <- colors.[vertex]
-                    partitionAdjeceny vertices.[j] 0  (getVertexConnections vertices.[j])
-                    partitionAdjeceny vertex 0 vertices
-                else
-                    partitionAdjeceny vertex (j + 1) vertices
-                                
-
-        for vertex in [0..nVertices - 1] do
-            if goOn.[vertex] then
-                partitionAdjeceny vertex 0 (getVertexConnections vertex) 
-
-        colors
+        if hasCuda.Force() && this.NumEdges >= 50000 then
+            let dStart, dEnd = getEdgesGpu rowIndex colIndex
+            partitionGpu dStart dEnd nVertices
+            |> fun c -> c.Gather()
+        else
+            partitionLinear ()
 
     override this.Equals g2 =
         match g2 with
