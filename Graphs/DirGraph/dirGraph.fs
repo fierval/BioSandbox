@@ -18,17 +18,17 @@ open GpuGoodies
 /// v -> a, b, c, d - v - unique vertex name for each line of the file. a, b, c, d - names of vertices it connects to.
 /// </summary>
 [<StructuredFormatDisplay("{AsEnumerable}")>]
-type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<'a, int>) = 
+type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<'a, int>) =
 
     let rowIndex  = rowIndex.ToArray()
     let colIndex = colIndex.ToArray()
     let nEdges = colIndex.Length
-    let verticesNameToOrdinal = verticesNameToOrdinal 
+    let verticesNameToOrdinal = verticesNameToOrdinal
     let nVertices = verticesNameToOrdinal.Count
 
     let ordinalToNames () =
         let res : 'a [] = Array.zeroCreate verticesNameToOrdinal.Count
-        verticesNameToOrdinal 
+        verticesNameToOrdinal
         |> Seq.iter (fun kvp -> res.[kvp.Value] <- kvp.Key)
 
         res
@@ -48,38 +48,38 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
 
     let reverse =
         lazy (
-            let allExistingRows = [0..rowIndex.Length - 1]                
+            let allExistingRows = [0..rowIndex.Length - 1]
 
-            let subSeq = 
+            let subSeq =
                 if hasCuda.Force() && rowIndex.Length >= gpuThresh then //use CUDA to reverse
-                    let start, end' = 
+                    let start, end' =
                         let dStart, dEnd = getEdgesGpu rowIndex colIndex
                         sortStartEnd dStart dEnd
-                
+
                     Seq.zip end' start
                 else
                     asOrdinalsEnumerable ()
                     |> Seq.map (fun (i, verts) -> verts |> Seq.map (fun v -> (v, i)))
                     |> Seq.collect id
 
-            let grSeq = 
+            let grSeq =
                 subSeq
                 |> Seq.groupBy fst
                 |> Seq.map (fun (key, sq) -> key, sq |> Seq.map snd |> Seq.toArray)
 
-            let allRows : seq<int * int []> = 
+            let allRows : seq<int * int []> =
                 allExistingRows.Except (grSeq |> Seq.map fst) |> Seq.map (fun e -> e, [||])
                 |> fun col -> col.Union grSeq
                 |> Seq.sortBy fst
-                    
+
 
             let revRowIndex = allRows |> Seq.scan (fun st (key, v) -> st + v.Length) 0 |> Seq.take rowIndex.Length
             let revColIndex = allRows |> Seq.collect snd
 
-            DirectedGraph(revRowIndex, revColIndex, verticesNameToOrdinal)            
+            DirectedGraph(revRowIndex, revColIndex, verticesNameToOrdinal)
         )
 
-    let hasEulerPath = 
+    let hasEulerPath =
         lazy (
             // start: out = in + 1
             let rows = Array.zip rowIndex (reverse.Force().RowIndex)
@@ -88,7 +88,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             let remains = Array.takeWhile (fun (gr, rev) -> gr = rev) rows.[pref.Length + middle.Length..]
             pref.Length <> rows.Length && remains.Length + middle.Length + pref.Length = rows.Length
         )
-        
+
     let partitionLinear () =
         let goOn = Array.create nVertices true
         let colors = [|0..nVertices - 1|]
@@ -99,7 +99,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             else
                 if colors.[vertex] > colors.[vertices.[j]] then
                     colors.[vertex] <- colors.[vertices.[j]]
-                    partitionAdjeceny vertex 0 vertices 
+                    partitionAdjeceny vertex 0 vertices
 
                 elif colors.[vertex] < colors.[vertices.[j]]
                 then
@@ -108,11 +108,10 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
                     partitionAdjeceny vertex 0 vertices
                 else
                     partitionAdjeceny vertex (j + 1) vertices
-                                
 
         for vertex in [0..nVertices - 1] do
             if goOn.[vertex] then
-                partitionAdjeceny vertex 0 (getVertexConnections vertex) 
+                partitionAdjeceny vertex 0 (getVertexConnections vertex)
 
         colors
 
@@ -143,25 +142,24 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// <summary>
     /// Is this a Eulerian graph: i.e., in-degree of all vertices = out-degree
     /// </summary>
-    member this.IsEulerian = 
-        this.IsConnected && 
+    member this.IsEulerian =
+        this.IsConnected &&
             (this.Reverse.RowIndex = this.RowIndex || hasEulerPath.Force())
 
     /// <summary>
     /// Array of tuples of edge ordinals
     /// </summary>
-    member this.OrdinalEdges = 
+    member this.OrdinalEdges =
         [|0..nVertices - 1|]
         |> Array.map (fun v -> getVertexConnections v |> Array.map (fun c -> v, c))
         |> Array.concat
-            
+
     /// <summary>
     /// Array of tuples of all graph edges
     /// </summary>
     member this.Edges =
         this.OrdinalEdges
         |> Array.map (fun (start, end') -> verticesOrdinalToNames.[start], verticesOrdinalToNames.[end'])
-    
     /// <summary>
     /// Finds all connected components and returns them as a list of vertex sets.
     /// </summary>
@@ -169,19 +167,18 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
         this.Partition()
         |> Array.zip [|0..nVertices - 1|]
         |> Array.groupBy snd
-        |> Array.map (fun (_, color) -> 
-            color |> Array.map (fun (v, c) -> verticesOrdinalToNames.[v]) )
-            
-    // GPU worker                                                    
+        |> Array.map (fun (_, color) -> color |> Array.map (fun (v, c) -> verticesOrdinalToNames.[v]) )
+
+    // GPU worker
     member private this.Worker = getWorker()
 
     member this.IsConnected = this.Partition() |> Array.distinct |> Array.length |> ((=) 1)
-      
+
     member this.FindEulerPath () =
         if not this.IsEulerian then []
         else
             // in the case of Eulerian path we need to figure out where to start:
-            let mutable curVertex = 
+            let mutable curVertex =
                 if hasEulerPath.Force() then
                     let diffs = Array.map2 (-) this.RowIndex this.Reverse.RowIndex
                     try // if the vertex with out-degre > in-degree comes first...
@@ -189,7 +186,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
                     with
                     _ -> diffs |> Array.findIndexBack (fun d -> d = -1)
                 else
-                    0    
+                    0
 
             let stack = Stack<int>()
             let visited = Dictionary<int, int []>()
@@ -203,7 +200,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
                 let connected = visited.[curVertex]
                 if connected.Length = 0 then
                     cycle <- curVertex :: cycle
-                    curVertex <- stack.Pop()                         
+                    curVertex <- stack.Pop()
                 else
                     stack.Push curVertex
                     visited.[curVertex] <- connected.[1..]
@@ -237,7 +234,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
 
                 let getKeys (gr : seq<'a * 'a[]>) =
                     gr |> Seq.map fst |> Seq.toArray
-                
+
                 let getVals (gr : seq<'a * 'a[]>) =
                     gr |> Seq.map (fun (a, b) -> b |> Array.sort) |> Seq.toArray
 
@@ -249,10 +246,9 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
 
                 keysEq thisSeq gseq && valuesEq thisSeq gseq
             else false
-               
+
         | _ -> false
-            
-    override this.GetHashCode() = this.AsEnumerable.GetHashCode() 
-   
+
+    override this.GetHashCode() = this.AsEnumerable.GetHashCode()
+
 type StrGraph = DirectedGraph<string>
-                    

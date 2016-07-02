@@ -5,7 +5,7 @@ module GpuGoodies =
     open Alea.CUDA.Unbound
     open Alea.CUDA.Utilities
 
-    let internal hasCuda = 
+    let internal hasCuda =
         lazy (
             try
                 Device.Default.Name |> ignore
@@ -27,7 +27,7 @@ module GpuGoodies =
         let idx = blockIdx.x * blockDim.x + threadIdx.x
         if idx < len - 1 then
             dest.[idx] <- source.[idx]
-                    
+
     // represent the graph as two arrays. For each vertex v, an edge is a tuple
     // start[v], end'[v]
     [<Kernel;ReflectedDefinition>]
@@ -38,7 +38,7 @@ module GpuGoodies =
                 start.[vertex] <- idx
                 end'.[vertex] <- colIndex.[vertex]
 
-    [<Kernel; ReflectedDefinition>]    
+    [<Kernel; ReflectedDefinition>]
     let scatter (start : deviceptr<int>) (end' : deviceptr<int>) (len: int) (falsesScan : deviceptr<int>) (revBits : deviceptr<int>) (outStart : deviceptr<int>) (outEnd : deviceptr<int>) =
         let idx = blockIdx.x * blockDim.x + threadIdx.x
         if idx < len then
@@ -67,7 +67,7 @@ module GpuGoodies =
     /// <param name="len">length of end' and start arrays - # of edges</param>
     /// <param name="stop">Should we continue?</param>
     [<Kernel; ReflectedDefinition>]
-    let partionKernel (start : deviceptr<int>) (end': deviceptr<int>) (colors : deviceptr<int>) len (go : deviceptr<bool>) = 
+    let partionKernel (start : deviceptr<int>) (end': deviceptr<int>) (colors : deviceptr<int>) len (go : deviceptr<bool>) =
         let idx = blockDim.x * blockIdx.x + threadIdx.x
 
         if idx < len then
@@ -141,9 +141,9 @@ module GpuGoodies =
 
             // scatter
             worker.Launch <@ scatter @> lp start.Ptr end'.Ptr len numFalses.Ptr dBits.Ptr outStart.Ptr outEnd.Ptr
-    
+
         getOutArr (numIter - 1)
-        
+
     let sortStartEnd (dStart : DeviceMemory<int>) (dEnd : DeviceMemory<int>) =
         let outStart, outEnd = sortStartEndGpu dStart dEnd
         outStart.Gather(), outEnd.Gather()

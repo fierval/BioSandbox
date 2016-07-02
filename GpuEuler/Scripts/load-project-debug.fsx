@@ -3,3 +3,4 @@
 #load "load-references-debug.fsx"
 #load "../successor.fs"
       "../partition.fs"
+      "../switchingPairs.fs"
