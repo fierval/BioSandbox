@@ -2,7 +2,6 @@
 
     [<AutoOpen>]
     module Partition =
-        
         open Graphs
         open Alea.CUDA
         open Alea.CUDA.Unbound
@@ -12,6 +11,8 @@
         open System.Linq
         open System.Collections.Generic
         open System
+        open GpuSimpleSort
+        open GpuCompact
 
         /// <summary>
         /// Kernel that does edge-based partitioning
@@ -23,7 +24,7 @@
         /// <param name="len">length of end' and start arrays - # of edges</param>
         /// <param name="stop">Should we continue?</param>
         [<Kernel; ReflectedDefinition>]
-        let partionKernel (start : deviceptr<int>) (end': deviceptr<int>) (colors : deviceptr<int>) len (go : deviceptr<bool>) = 
+        let partionKernel (start : deviceptr<int>) (end': deviceptr<int>) (colors : deviceptr<int>) len (go : deviceptr<bool>) =
             let idx = blockDim.x * blockIdx.x + threadIdx.x
 
             if idx < len then
@@ -47,7 +48,7 @@
         /// <param name="len">length of end' array - # of edges</param>
         /// <param name="stop">Should we continue?</param>
         [<Kernel; ReflectedDefinition>]
-        let partionLinearGraphKernel (end': deviceptr<int>) (colors : deviceptr<int>) len (go : deviceptr<bool>) = 
+        let partionLinearGraphKernel (end': deviceptr<int>) (colors : deviceptr<int>) len (go : deviceptr<bool>) =
             let idx = blockDim.x * blockIdx.x + threadIdx.x
 
             if idx < len then
@@ -98,3 +99,7 @@
                 worker.Launch <@ partionLinearGraphKernel @> lp dEnd.Ptr dColor.Ptr dEnd.Length dGo.Ptr
 
             dColor
+
+        let normalizePartition (dColor : DeviceMemory<int>) =
+
+            let compacted = sortGpu dColor |> compactGpu |> fun comp -> comp.Gather()

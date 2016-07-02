@@ -20,7 +20,7 @@ let getNthSignificantReversedBit (arr : deviceptr<int>) (n : int) (len : int) (r
     if idx < len then
         revBits.[idx] <- ((arr.[idx] >>> n &&& 1) ^^^ 1)
 
-[<Kernel; ReflectedDefinition>]    
+[<Kernel; ReflectedDefinition>]
 let scatter (arr : deviceptr<int>) (len: int) (falsesScan : deviceptr<int>) (revBits : deviceptr<int>) (out : deviceptr<int>) =
     let idx = blockIdx.x * blockDim.x + threadIdx.x
     if idx < len then
@@ -39,13 +39,13 @@ let getBitCount n =
 
     getNextPowerOfTwoRec n 0
 
-let sort (arr : int []) =
-    let len = arr.Length
-    if len = 0 then [||]
+let sortGpu (dArr: DeviceMemory<int>) =
+    let len = dArr.Length
+    if len = 0 then dArr
     else
-        let gridSize = divup arr.Length blockSize
+        let gridSize = divup len blockSize
         let lp = LaunchParam(gridSize, blockSize)
-        
+
         // reducer to find the maximum number & get the number of iterations
         // from it.
         use reduceModule = new DeviceReduceModule<int>(target, <@ max @>)
@@ -54,7 +54,6 @@ let sort (arr : int []) =
         use scanModule = new DeviceScanModule<int>(target, <@ (+) @>)
         use scanner = scanModule.Create(len)
 
-        let dArr = worker.Malloc(arr)
         use dBits = worker.Malloc(len)
         use numFalses = worker.Malloc(len)
         let dArrTemp = worker.Malloc(len)
@@ -75,22 +74,28 @@ let sort (arr : int []) =
             // scatter
             worker.Launch <@ scatter @> lp (getArr i).Ptr len numFalses.Ptr dBits.Ptr (getOutArr i).Ptr
 
-        (getOutArr (numIter - 1)).Gather()
+        getOutArr (numIter - 1)
+
+let sort (arr : int []) =
+    use dArr = worker.Malloc(arr)
+    use sortedArr = sortGpu dArr
+    sortedArr.Gather()
+
 
 let generateRandomData n =
     if n <= 0 then failwith "n should be positive"
     let seed = uint32 DateTime.Now.Second
 
-    // setup random number generator        
+    // setup random number generator
     use cudaRandom = (new XorShift7.CUDA.DefaultNormalRandomModuleF32(target)).Create(1, 1, seed) :> IRandom<float32>
     use prngBuffer = cudaRandom.AllocCUDAStreamBuffer n
-    
+
     // create random numbers
     cudaRandom.Fill(0, n, prngBuffer)
-    // transfer results from device to host 
+    // transfer results from device to host
     prngBuffer.Gather() |> Array.map (((*) (float32 n)) >> int >> (fun x -> if x = Int32.MinValue then Int32.MaxValue else abs x))
 
-let toBin x = 
+let toBin x =
     if x = 0 then "0" else
         0
         |> Seq.unfold (fun st -> if (x >>> st) = 0 then None else Some(x >>> st &&& 1, st + 1))
@@ -98,7 +103,7 @@ let toBin x =
         |> Array.rev
         |> Array.fold (fun st e -> st + string e) ""
 
-let toBinRev x = 
+let toBinRev x =
     if x = 0 then "0" else
         0
         |> Seq.unfold (fun st -> if (1 <<< st) > x then None else Some((x >>> st &&& 1) ^^^ 1, st + 1))
@@ -109,4 +114,3 @@ let toBinRev x =
 let getBit x n =
     (x >>> n) &&& 0x1
 
-    

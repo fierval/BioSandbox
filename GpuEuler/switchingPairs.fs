@@ -7,3 +7,4 @@ namespace GpuEuler
         open Alea.CUDA.Utilities
         open Graphs.GpuGoodies
 
+        open GpuCompact
