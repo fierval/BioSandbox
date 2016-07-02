@@ -62,6 +62,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="GpuCompact.fs" />
     <Content Include="packages.config" />
+    <Compile Include="GpuDistinct.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">
@@ -87,6 +88,13 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GpuSort\GpuSort.fsproj">
+      <Name>GpuSort</Name>
+      <Project>{8437015f-05c1-4a5f-9fb2-c115236e659c}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
