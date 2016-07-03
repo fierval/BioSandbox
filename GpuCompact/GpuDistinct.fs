@@ -40,3 +40,8 @@ let distinctGpu (dArr : DeviceMemory<int>) =
     worker.Launch <@ distinctSortedNums @> lp dSorted.Ptr dSorted.Length dGrouped.Ptr
 
     compactGpuWithKernel <@createDistinctMap @> dGrouped
+
+let distinct (arr : int []) =
+    use dArr = worker.Malloc(arr)
+    let dDistinct = distinctGpu dArr
+    dDistinct.Gather()
