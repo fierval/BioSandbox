@@ -12,22 +12,21 @@ open Alea.CUDA
 [<AutoOpen>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Visualizer =
-    
+
     type GraphSeq<'a> = seq<'a * 'a []>
     let internal nDotThreshold = 10
 
     let internal toColor (c : string) (vertices : seq<'a>) =
         if vertices |> Seq.isEmpty then "" else
-        let formatstr = 
+        let formatstr =
             let f = "{0} [style=filled, color={1}"
             if c = "blue" then f + ", fontcolor=white]" else f + "]"
         vertices
         |> Seq.map (fun v -> String.Format(formatstr, v, c))
         |> Seq.reduce (+)
-                
 
     let internal coloring (self: GraphSeq<'a>) (selfRev : GraphSeq<'a>) in' out =
-        let bottomOutgoing (graphSeq : GraphSeq<'a>) bottom = 
+        let bottomOutgoing (graphSeq : GraphSeq<'a>) bottom =
             if bottom = 0 then Seq.empty
             else
                 graphSeq
@@ -40,7 +39,7 @@ module Visualizer =
 
         outVertices.Except outInVertices |> toColor "green",
         inVertices.Except outInVertices |> toColor "yellow",
-        outInVertices |> toColor "blue"                   
+        outInVertices |> toColor "blue"
 
     // Create a "graph" or a "cluster" visualization based on clusterN parameter
     let internal visualizeSubgraph (subgraph : GraphSeq<'a>) (subgraphRev : GraphSeq<'a>) outConMin inConMin clusterN =
@@ -49,13 +48,13 @@ module Visualizer =
 
         let colorOut, colorIn, colorBoth = coloring subgraph subgraphRev inConMin outConMin
 
-        let visualizable = 
-            subgraph 
-            |> Seq.map 
-                (fun (v, c) -> 
+        let visualizable =
+            subgraph
+            |> Seq.map
+                (fun (v, c) ->
                     if c.Length = 0 then v.ToString()
                     else
-                    c 
+                    c
                     |> Array.map (fun s -> v.ToString() + " -> " + s.ToString())
                     |> Array.reduce (fun acc e -> acc + "; " + e))
             |> Seq.reduce (fun acc e -> acc + "; " + e)
@@ -63,10 +62,10 @@ module Visualizer =
 
         visualizable
 
-    let internal visualizeEntire subgraph subgraphRev outConMin inConMin visualizer = 
-        visualizeSubgraph subgraph subgraphRev outConMin inConMin  -1 
+    let internal visualizeEntire subgraph subgraphRev outConMin inConMin visualizer =
+        visualizeSubgraph subgraph subgraphRev outConMin inConMin  -1
         |> visualizer
-        
+
     let internal visualizeAll (graph : DirectedGraph<'a>) outConMin inConMin clusters euler eulerLabels =
         if euler then
             let eulerPath = graph.FindEulerPath()
@@ -80,26 +79,26 @@ module Visualizer =
             |> Seq.windowed 2
             |> Seq.mapi (fun i [|out; in'|] -> String.Format("{0} -> {1} [label = {2}, fontcolor = blue, color={3}]", out, in', label i, color i))
             |> Seq.reduce (fun acc e -> acc + "; " + e)
-            |> fun gr -> 
-                eulerPath.[0].ToString() + "[color=green, style=filled]; " + 
-                    (if eulerPath.[0] <> eulerPath.[eulerPath.Length - 1] then 
+            |> fun gr ->
+                eulerPath.[0].ToString() + "[color=green, style=filled]; " +
+                    (if eulerPath.[0] <> eulerPath.[eulerPath.Length - 1] then
                         eulerPath.[eulerPath.Length - 1].ToString() + "[color=red, style=filled]; " else String.Empty) + gr
             |> fun gr -> ("digraph { " + gr + "}") |> if graph.NumVertices <= nDotThreshold then visualizeDot else visualizeSfdp
 
-        else 
+        else
             let rev = graph.Reverse
             let self = graph.AsEnumerable
             let selfRev = rev.AsEnumerable
 
-            let connectedComponents = 
-                if clusters then 
-                    graph.FindConnectedComponents() 
-                    |> Array.map (fun h -> h.AsEnumerable() |> Seq.toList) 
+            let connectedComponents =
+                if clusters then
+                    graph.FindConnectedComponents()
+                    |> Array.map (fun h -> h.AsEnumerable() |> Seq.toList)
                 else [||]
 
             if not clusters then visualizeEntire self selfRev outConMin inConMin (if graph.NumVertices <= nDotThreshold then visualizeDot else visualizeSfdp)
             else
-                connectedComponents 
+                connectedComponents
                 |> Array.mapi
                     (fun i vertices ->
                         let subgraph = vertices |> graph.Subgraph
@@ -107,8 +106,8 @@ module Visualizer =
                         visualizeSubgraph subgraph subgraphRev outConMin inConMin i
                     )
                 |> Array.reduce (+)
-                |> fun gr -> createVisualClusters ("digraph { " + gr + "}") 
-    
+                |> fun gr -> createVisualClusters ("digraph { " + gr + "}")
+
     /// <summary>
     /// Visualizer extenstion
     /// </summary>

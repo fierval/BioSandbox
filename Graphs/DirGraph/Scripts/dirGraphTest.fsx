@@ -38,3 +38,7 @@ let grr = StrGraph.FromStrings strsr
 //grr.Visualize(euler=true)
 grs.Edges
 grs.Partition()
+
+StrGraph.SaveStrs(euler, @"c:\temp\greuler.txt")
+
+let euler1 = StrGraph.FromFile(@"c:\temp\greuler.txt")

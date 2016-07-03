@@ -12,7 +12,7 @@ open Alea.CUDA
 
 [<AutoOpen>]
 module Extensions =
-    type Graphs.DirectedGraph<'a when 'a:comparison> with 
+    type Graphs.DirectedGraph<'a when 'a:comparison> with
         /// <summary>
         /// Generates a Eulerian graph
         /// </summary>
@@ -25,7 +25,7 @@ module Extensions =
             let connections = Array.init n (fun i -> rnd.Next(1, k + 1))
             let connectionsReverse = Array.zeroCreate n
             connections.CopyTo(connectionsReverse, 0)
-            
+
             if isPath then
                 let outLessThanIn = rnd.Next(n)
                 let mutable inLessThanOut = rnd.Next(n)
@@ -39,23 +39,23 @@ module Extensions =
             for i = 0 to n - 1 do
                 rowIndex.Add(0)
                 rowIndex.[i + 1] <- rowIndex.[i] + connections.[i]
-                
-                // scan vertices starting from vertex i and grab the next available vertex to connect to while it is possible 
+
+                // scan vertices starting from vertex i and grab the next available vertex to connect to while it is possible
                 // connectionsReverse keeps track of each vertex ability to serve as an inbound vertex. At the end, all
                 // of its elements should be eq to 0
-                let cols = 
+                let cols =
                     (0, 1)
-                    |> Seq.unfold 
-                        (fun (st, k) -> 
+                    |> Seq.unfold
+                        (fun (st, k) ->
                             let idx = (i + k) % n
-                            if st = connections.[i] then None 
-                            elif connectionsReverse.[idx] = 0 
+                            if st = connections.[i] then None
+                            elif connectionsReverse.[idx] = 0
                             then Some(-1, (st, k + 1))
                             else
                                 connectionsReverse.[idx] <- connectionsReverse.[idx] - 1
                                 Some(idx, (st + 1, k + 1)))
                     |> Seq.filter(fun x -> x >= 0)
-                colIndex.AddRange cols    
+                colIndex.AddRange cols
             DirectedGraph(rowIndex, colIndex, ([0..rowIndex.Count - 2].ToDictionary((fun s -> s.ToString()), id) :> IDictionary<string, int>))
 
 
@@ -66,7 +66,7 @@ module Extensions =
         /// <param name="lines">
         /// array of strings formatted: out_vertex -> in_v1, in_v2, in_v3,..
         ///</param>
-        static member FromStrings (lines : string seq) =  
+        static member FromStrings (lines : string seq) =
 
             let rowIndexRaw = List<int>()
             let colIndex = List<int>()
@@ -74,15 +74,15 @@ module Extensions =
             let nameToOrdinal = Dictionary<string, int>() // vertices and the index to which they correspond
 
             let addVertex (line : string) =
-                
-                let vertex, connected = 
+
+                let vertex, connected =
                     if line.Contains("->") then
                         line.Trim().Split([|"->"|], 2, StringSplitOptions.RemoveEmptyEntries) |> fun [|a; b|] -> a.Trim(), b.Trim()
                     else line.Trim(), ""
 
                 let newVertex = not (nameToOrdinal.ContainsKey vertex)
-                if newVertex then 
-                    nameToOrdinal.Add(vertex, nameToOrdinal.Keys.Count)                    
+                if newVertex then
+                    nameToOrdinal.Add(vertex, nameToOrdinal.Keys.Count)
                     rowIndexRaw.Add 0
 
                 // get vertices connected to this one
@@ -98,7 +98,7 @@ module Extensions =
                 let newVertices = connectedVertices.Except nameToOrdinal.Keys |> Seq.toArray
                 newVertices
                 |> Seq.iter (fun v -> nameToOrdinal.Add(v, nameToOrdinal.Keys.Count))
-                
+
                 // extend the new rows
                 let newVerticesZeroes = Array.zeroCreate newVertices.Length
                 rowIndexRaw.AddRange newVerticesZeroes
@@ -107,7 +107,7 @@ module Extensions =
                 // entry for the given row. We will need to scan it and update its values later
                 rowIndexRaw.[nameToOrdinal.[vertex]] <- connectedVertices.Length
 
-                let connectedOrdinals = 
+                let connectedOrdinals =
                     connectedVertices
                     |> Seq.map (fun v -> nameToOrdinal.[v])
 
@@ -129,11 +129,26 @@ module Extensions =
         static member FromFile (fileName : string) =
 
             if String.IsNullOrWhiteSpace fileName || not (File.Exists fileName) then failwith "Invalid file"
-            
+
             let lines = File.ReadLines(fileName)
-            DirectedGraph<string>.FromStrings(lines)                
+            DirectedGraph<string>.FromStrings(lines)
 
         static member FromInts (ints : int seq) =
             let rowIndex = [0..ints.Count()]
             let nameToOrdinal = rowIndex.[0..rowIndex.Length - 2].ToDictionary((fun v -> v.ToString()), (fun v -> v))
             StrGraph(rowIndex, ints, nameToOrdinal)
+
+        static member SaveStrs ((gr : DirectedGraph<string>), fileName : string) =
+            let toVertices (arr : string []) =
+                if arr |> Array.isEmpty then String.Empty
+                else
+                    " -> " +
+                    (arr
+                    |> Array.reduce  (fun st e -> st + "," + string e))
+
+            let strs =
+                gr.AsEnumerable
+                |> Seq.map (fun (v, arr) -> v + toVertices arr)
+                |> Seq.toArray
+
+            File.WriteAllLines(fileName, strs)
