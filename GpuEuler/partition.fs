@@ -13,6 +13,38 @@
         open System
         open GpuDistinct
 
+        [<Kernel; ReflectedDefinition>]
+        let scatterDistinct (distinct : deviceptr<int>) len (map : deviceptr<int>) =
+            let idx = blockDim.x * blockIdx.x + threadIdx.x
+            if idx < len then
+                map.[distinct.[idx]] <- idx
+
+        [<Kernel; ReflectedDefinition>]
+        let remapColors (colors : deviceptr<int>) len (map : deviceptr<int>) =
+            let idx = blockDim.x * blockIdx.x + threadIdx.x
+            if idx < len then
+                colors.[idx] <- map.[colors.[idx]]
+
+        /// <summary>
+        /// Normalizes our partition.
+        /// Remaps partition colors to the range of 0..n, n = # of colors.
+        /// </summary>
+        /// <param name="dColor"></param>
+        let normalizePartition (dColor : DeviceMemory<int>) =
+
+            // this compacts
+            use dDistinct = distinctGpu dColor
+            let maxPartition = dDistinct.GatherScalar(dDistinct.Length - 1) + 1
+
+            use dMap = worker.Malloc<int>(maxPartition)
+            let mutable lp = LaunchParam(divup dDistinct.Length blockSize, blockSize)
+
+            worker.Launch <@scatterDistinct@> lp dDistinct.Ptr dDistinct.Length dMap.Ptr
+            lp <- LaunchParam(divup dColor.Length blockSize, blockSize)
+
+            worker.Launch <@remapColors@> lp dColor.Ptr dColor.Length dMap.Ptr
+            dColor
+
         /// <summary>
         /// Kernel that does edge-based partitioning
         /// Algorithm 2 from http://www.massey.ac.nz/~dpplayne/Papers/cstn-089.pdf
@@ -97,35 +129,4 @@
                 dGo.Scatter([|false|])
                 worker.Launch <@ partionLinearGraphKernel @> lp dEnd.Ptr dColor.Ptr dEnd.Length dGo.Ptr
 
-            dColor
-
-        [<Kernel; ReflectedDefinition>]
-        let scatterDistinct (distinct : deviceptr<int>) len (map : deviceptr<int>) =
-            let idx = blockDim.x * blockIdx.x + threadIdx.x
-            if idx < len then
-                map.[distinct.[idx]] <- idx
-
-        [<Kernel; ReflectedDefinition>]
-        let remapColors (colors : deviceptr<int>) len (map : deviceptr<int>) =
-            let idx = blockDim.x * blockIdx.x + threadIdx.x
-            if idx < len then
-                colors.[idx] <- map.[idx]
-
-        /// <summary>
-        /// Normalizes our partition.
-        /// Remaps partition colors to the range of 0..n, n = # of colors.
-        /// </summary>
-        /// <param name="dColor"></param>
-        let normalizePartition (dColor : DeviceMemory<int>) =
-
-            // this compacts
-            use dDistinct = distinctGpu dColor
-            let maxPartition = dDistinct.GatherScalar(dDistinct.Length - 1) + 1
-
-            use dMap = worker.Malloc<int>(maxPartition)
-            let mutable lp = LaunchParam(divup dDistinct.Length blockSize, blockSize)
-
-            worker.Launch <@scatterDistinct@> lp dDistinct.Ptr dDistinct.Length dMap.Ptr
-            lp <- LaunchParam(divup dColor.Length blockSize, blockSize)
-
-            worker.Launch <@remapColors@> lp dColor.Ptr dColor.Length dMap.Ptr
+            normalizePartition dColor

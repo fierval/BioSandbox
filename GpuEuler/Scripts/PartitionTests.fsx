@@ -11,6 +11,7 @@ open GpuGoodies
 open GpuCompact
 open System.Diagnostics
 open System
+open DataGen
 
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
@@ -19,13 +20,15 @@ Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, 
 //let grs = StrGraph.FromStrings sparse
 
 
-let gr = StrGraph.GenerateEulerGraph(20, 4)
+let gr = StrGraph.GenerateEulerGraph(120, 4)
 
 let dStart, dEnd, dRevRowIndex = reverseGpu gr
 let succ = successors dStart dRevRowIndex
-let partition = (partitionLinear succ).Gather()
+//let partition = (partitionLinear succ).Gather()
 
-let lg = StrGraph.FromInts succ
+let genr = graphGen 4 5
 
-gr.Visualize()
-lg.Visualize()
+let grf = genr.Sample(10, 1).[0]
+let dStart, dEnd = getEdgesGpu grf.RowIndex grf.ColIndex
+let dColor = partitionGpu dStart dEnd grf.NumVertices
+grf.Visualize()

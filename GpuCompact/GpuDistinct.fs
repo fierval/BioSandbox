@@ -18,7 +18,7 @@ let distinctSortedNums (ends : deviceptr<int>) len (grouped : deviceptr<int>) =
                 idx <- idx - 1
             grouped.[idx + 1] <- cur
         else
-            grouped.[idx] <- Int32.MinValue
+            grouped.[idx] <- 0
 
 // kernel to use for compaction: the first element always gets in
 [<Kernel; ReflectedDefinition>]
@@ -26,7 +26,7 @@ let createDistinctMap (arr : deviceptr<int>) len (out : deviceptr<int>) =
     let ind = blockIdx.x * blockDim.x + threadIdx.x
 
     if ind < len then
-        out.[ind] <- if arr.[ind] <> Int32.MinValue || ind = 0 then 1 else 0
+        out.[ind] <- if arr.[ind] <> 0 || ind = 0 then 1 else 0
 
 /// <summary>
 /// Disticnt

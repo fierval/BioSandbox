@@ -4,6 +4,7 @@ open Alea.CUDA
 open System.IO
 open System
 open System.Collections.Generic
+open System.Linq
 
 open GpuCompact
 open GpuDistinct

@@ -113,7 +113,10 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             if goOn.[vertex] then
                 partitionAdjeceny vertex 0 (getVertexConnections vertex)
 
+        // normalize colors to run the range of [0..n - 1] (n = # of colors)
+        let distinctColors = colors |> Array.distinct |> Array.sort |> Array.mapi (fun i value -> value, i) |> Map.ofArray
         colors
+        |> Array.map (fun c -> distinctColors.[c]) 
 
     member this.NumVertices = nVertices
     member this.NumEdges = nEdges
