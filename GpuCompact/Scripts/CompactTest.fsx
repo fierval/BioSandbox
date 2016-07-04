@@ -8,13 +8,15 @@ open System.Linq
 
 open GpuCompact
 open GpuDistinct
+open System.Diagnostics
 
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
 let rnd = Random(int DateTime.Now.Ticks)
 let nums = List<int>()
-let range = [0..rnd.Next(100, 10000)]
+let n = 15 * 1024 * 1024
+let range = [0..n]
 
 for i in range do
     nums.Add (rnd.Next(0, rnd.Next(1, 1000)))

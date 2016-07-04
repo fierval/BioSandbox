@@ -110,7 +110,7 @@
                 dGo.Scatter([|false|])
                 worker.Launch <@ partionKernel @> lp dStart.Ptr dEnd.Ptr dColor.Ptr dStart.Length dGo.Ptr
 
-            dColor
+            normalizePartition dColor
 
         /// <summary>
         /// Run the partitioning kernel

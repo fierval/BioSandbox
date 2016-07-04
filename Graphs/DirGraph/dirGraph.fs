@@ -18,7 +18,7 @@ open GpuGoodies
 /// v -> a, b, c, d - v - unique vertex name for each line of the file. a, b, c, d - names of vertices it connects to.
 /// </summary>
 [<StructuredFormatDisplay("{AsEnumerable}")>]
-type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<'a, int>) =
+type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<'a, int>) as this =
 
     let rowIndex  = rowIndex.ToArray()
     let colIndex = colIndex.ToArray()
@@ -90,33 +90,27 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
         )
 
     let partitionLinear () =
-        let goOn = Array.create nVertices true
+        let mutable goOn = true
         let colors = [|0..nVertices - 1|]
+        let edges = this.OrdinalEdges
 
-        let rec partitionAdjeceny vertex j (vertices : int [])=
-            goOn.[vertex] <- false
-            if j = vertices.Length then ()
-            else
-                if colors.[vertex] > colors.[vertices.[j]] then
-                    colors.[vertex] <- colors.[vertices.[j]]
-                    partitionAdjeceny vertex 0 vertices
+        while goOn do
+            goOn <- false
+            for edge in edges do
+                let i, j = edge
+                let colorI, colorJ = colors.[i], colors.[j]
 
-                elif colors.[vertex] < colors.[vertices.[j]]
-                then
-                    colors.[vertices.[j]] <- colors.[vertex]
-                    partitionAdjeceny vertices.[j] 0  (getVertexConnections vertices.[j])
-                    partitionAdjeceny vertex 0 vertices
-                else
-                    partitionAdjeceny vertex (j + 1) vertices
-
-        for vertex in [0..nVertices - 1] do
-            if goOn.[vertex] then
-                partitionAdjeceny vertex 0 (getVertexConnections vertex)
+                if colorI < colorJ then
+                    goOn <- true
+                    colors.[j] <- colorI
+                elif colorJ < colorI then
+                    goOn <- true
+                    colors.[i] <- colorJ
 
         // normalize colors to run the range of [0..n - 1] (n = # of colors)
         let distinctColors = colors |> Array.distinct |> Array.sort |> Array.mapi (fun i value -> value, i) |> Map.ofArray
         colors
-        |> Array.map (fun c -> distinctColors.[c]) 
+        |> Array.map (fun c -> distinctColors.[c])
 
     member this.NumVertices = nVertices
     member this.NumEdges = nEdges
