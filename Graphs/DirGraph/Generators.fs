@@ -133,12 +133,14 @@ module Extensions =
             let lines = File.ReadLines(fileName)
             DirectedGraph<string>.FromStrings(lines)
 
-        static member FromInts (ints : int seq) =
-            let rowIndex = [0..ints.Count()]
-            let nameToOrdinal = rowIndex.[0..rowIndex.Length - 2].ToDictionary((fun v -> v.ToString()), (fun v -> v))
-            StrGraph(rowIndex, ints, nameToOrdinal)
+        static member FromInts (rowIndex : int seq) (colIndex : int seq) =
+            StrGraph(rowIndex, colIndex, [0..rowIndex.Count() - 2].ToDictionary(string, id))
 
-        static member SaveStrs ((gr : DirectedGraph<string>), fileName : string) =
+        static member FromVectorOfInts (ints : int seq) =
+            let rowIndex = [|0..ints.Count()|]
+            StrGraph.FromInts rowIndex ints
+
+        static member SaveStrs (gr : DirectedGraph<string>, fileName : string) =
             let toVertices (arr : string []) =
                 if arr |> Array.isEmpty then String.Empty
                 else
@@ -152,3 +154,22 @@ module Extensions =
                 |> Seq.toArray
 
             File.WriteAllLines(fileName, strs)
+
+        /// <summary>
+        /// Created "undirected" from "directed" graph by doubling up the edges
+        /// </summary>
+        /// <param name="gr"></param>
+        //TODO: Doesn't handle vertices with now arcs
+        static member CreateUndirected (gr : DirectedGraph<'a>) =
+            let starts, colIndex =
+                Array.concat [|gr.OrdinalEdges; gr.OrdinalEdges |> Array.map (fun (st, e) -> e, st)|]
+                |> Array.sortBy fst
+                |> Array.unzip
+
+            let rowIndex =
+                starts
+                |> Array.groupBy id
+                |> Array.map (fun (_, v) -> v.Length)
+                |> Array.scan (+) 0
+
+            DirectedGraph<'a>(rowIndex, colIndex, gr.NamedVertices)

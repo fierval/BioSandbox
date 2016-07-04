@@ -74,13 +74,13 @@ module SuccessorGenerator =
         // TODO: This needs to be made more efficient
         //if not gr.IsEulerian then failwith "Not Eulerian"
 
-        let dStart, dEnd = 
-            getEdgesGpu gr.RowIndex gr.ColIndex 
+        let dStart, dEnd =
+            getEdgesGpu gr.RowIndex gr.ColIndex
             ||> sortStartEndGpu
 
         // Get the row index of the reverse graph
-        let dGrouped = getRevRowIndex dEnd
-        let dCompacted = compactGpu dGrouped
+        use dGrouped = getRevRowIndex dEnd
+        use dCompacted = compactGpu dGrouped
 
         // Row index of the reversed graph will be a scan of the compacted array
         use scanModule = new DeviceScanModule<int>(GPUModuleTarget.Worker(worker), <@ (+) @>)
@@ -103,7 +103,7 @@ module SuccessorGenerator =
 
         [|0..starts.Length - 1|].AsParallel()
             .ForAll
-            (fun i -> 
+            (fun i ->
                 successors.[rowIndex.[starts.[i]]] <- i
                 rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
             )

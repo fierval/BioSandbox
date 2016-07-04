@@ -61,13 +61,14 @@
   <ItemGroup>
     <Compile Include="successor.fs" />
     <Compile Include="partition.fs" />
-    <Compile Include="switchingPairs.fs" />
+    <Compile Include="gcedges.fs" />
     <Content Include="packages.config" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
     <None Include="Scripts\SuccessorTests.fsx" />
     <None Include="Scripts\Perf.fsx" />
     <None Include="Scripts\PartitionTests.fsx" />
+    <None Include="Scripts\GCTest.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">
@@ -122,7 +123,7 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

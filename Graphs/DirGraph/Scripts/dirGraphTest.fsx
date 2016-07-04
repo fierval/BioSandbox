@@ -42,3 +42,9 @@ grs.Partition()
 StrGraph.SaveStrs(euler, @"c:\temp\greuler.txt")
 
 let euler1 = StrGraph.FromFile(@"c:\temp\greuler.txt")
+
+grs.Visualize()
+
+let grund = StrGraph.CreateUndirected grs
+
+grund.Visualize()
