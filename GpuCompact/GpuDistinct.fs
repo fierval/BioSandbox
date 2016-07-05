@@ -29,7 +29,7 @@ let createDistinctMap (arr : deviceptr<int>) len (out : deviceptr<int>) =
         out.[ind] <- if arr.[ind] <> 0 || ind = 0 then 1 else 0
 
 /// <summary>
-/// Disticnt
+/// Distinct
 /// </summary>
 /// <param name="dArr"></param>
 let distinctGpu (dArr : DeviceMemory<int>) =

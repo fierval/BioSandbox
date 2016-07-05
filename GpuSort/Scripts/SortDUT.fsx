@@ -10,11 +10,11 @@ Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, 
 
 let genNonNeg = Arb.generate<int> |> Gen.filter ((<=) 0)
 
-type Marker =
+type ``Sort DUT`` =
     static member arbNonNeg = genNonNeg |> Arb.fromGen
     static member ``Sorting Correctly`` arr =
         sort arr = Array.sort arr
 
-Arb.registerByType(typeof<Marker>)
-Check.QuickAll(typeof<Marker>)
+Arb.registerByType(typeof<``Sort DUT``>)
+Check.QuickAll(typeof<``Sort DUT``>)
 

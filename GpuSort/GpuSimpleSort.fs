@@ -15,6 +15,11 @@ let target = GPUModuleTarget.Worker worker
 let blockSize = 512
 
 [<Kernel; ReflectedDefinition>]
+let copyKernel (src : deviceptr<int>) len (dest : deviceptr<int>) =
+    let idx = blockIdx.x * blockDim.x + threadIdx.x
+    if idx < len then dest.[idx] <- src.[idx]
+
+[<Kernel; ReflectedDefinition>]
 let getNthSignificantReversedBit (arr : deviceptr<int>) (n : int) (len : int) (revBits : deviceptr<int>) =
     let idx = blockIdx.x * blockDim.x + threadIdx.x
     if idx < len then
@@ -56,12 +61,15 @@ let sortGpu (dArr: DeviceMemory<int>) =
 
         use dBits = worker.Malloc(len)
         use numFalses = worker.Malloc(len)
-        let dArrTemp = worker.Malloc(len)
+        let dArrOrig = worker.Malloc(len)
+        use dArrTemp = worker.Malloc(len)
+
+        worker.Launch <@copyKernel @> lp dArr.Ptr len dArrOrig.Ptr
 
         // Number of iterations = bit count of the maximum number
         let numIter = reducer.Reduce(dArr.Ptr, len) |> getBitCount
 
-        let getArr i = if i &&& 1 = 0 then dArr else dArrTemp
+        let getArr i = if i &&& 1 = 0 then dArrOrig else dArrTemp
         let getOutArr i = getArr (i + 1)
 
         for i = 0 to numIter - 1 do
@@ -74,7 +82,9 @@ let sortGpu (dArr: DeviceMemory<int>) =
             // scatter
             worker.Launch <@ scatter @> lp (getArr i).Ptr len numFalses.Ptr dBits.Ptr (getOutArr i).Ptr
 
-        getOutArr (numIter - 1)
+        if numIter &&& 1 <> 0 then
+            worker.Launch <@copyKernel @> lp dArrTemp.Ptr len dArrOrig.Ptr
+        dArrOrig
 
 let sort (arr : int []) =
     use dArr = worker.Malloc(arr)

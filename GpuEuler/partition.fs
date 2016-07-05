@@ -20,10 +20,10 @@
                 map.[distinct.[idx]] <- idx
 
         [<Kernel; ReflectedDefinition>]
-        let remapColors (colors : deviceptr<int>) len (map : deviceptr<int>) =
+        let remapColors (colors : deviceptr<int>) len (map : deviceptr<int>) (compacted : deviceptr<int>) =
             let idx = blockDim.x * blockIdx.x + threadIdx.x
             if idx < len then
-                colors.[idx] <- map.[colors.[idx]]
+                compacted.[idx] <- map.[colors.[idx]]
 
         /// <summary>
         /// Normalizes our partition.
@@ -42,8 +42,9 @@
             worker.Launch <@scatterDistinct@> lp dDistinct.Ptr dDistinct.Length dMap.Ptr
             lp <- LaunchParam(divup dColor.Length blockSize, blockSize)
 
-            worker.Launch <@remapColors@> lp dColor.Ptr dColor.Length dMap.Ptr
-            dColor
+            let dCompacted = worker.Malloc<int>(dColor.Length)
+            worker.Launch <@remapColors@> lp dColor.Ptr dColor.Length dMap.Ptr dCompacted.Ptr
+            dCompacted.Gather()
 
         /// <summary>
         /// Kernel that does edge-based partitioning
@@ -121,7 +122,7 @@
         let partitionLinear (end' : int []) =
             let lp = LaunchParam(divup end'.Length blockSize, blockSize)
 
-            let dColor = worker.Malloc([|0..end'.Length - 1|])
+            use dColor = worker.Malloc([|0..end'.Length - 1|])
             use dEnd = worker.Malloc(end')
             use dGo = worker.Malloc([|true|])
 
