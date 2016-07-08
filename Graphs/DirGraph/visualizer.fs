@@ -137,13 +137,13 @@ module Visualizer =
         /// </summary>
         /// <param name="into">Optional. If present - should be the minimum number of inbound connections which would select the vertex for coloring.</param>
         /// <param name="out">Optional. If present - should be the minimum number of outbound connections which would select the vertex for coloring.</param>
-        member graph.Visualize(?into, ?out, ?clusters, ?euler, ?eulerLabels : string seq, ?spanningTree : bool) =
+        member graph.Visualize(?into, ?out, ?clusters, ?euler, ?eulerLabels : string seq, ?spanningTree, ?washNonSpanning) =
             let outConMin = defaultArg out 0
             let inConMin = defaultArg into 0
             let clusters = defaultArg clusters false
             let euler = defaultArg euler false
             let eulerLabels = defaultArg eulerLabels Seq.empty
             let spanning = defaultArg spanningTree false
-            whiteWashNonSpanningEdges <- graph.CleanSpanningTree
+            whiteWashNonSpanningEdges <- defaultArg washNonSpanning true 
 
             visualizeAll graph outConMin inConMin clusters euler eulerLabels spanning

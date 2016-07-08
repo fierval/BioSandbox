@@ -5,19 +5,6 @@ module GpuGoodies =
     open Alea.CUDA.Unbound
     open Alea.CUDA.Utilities
 
-    let internal hasCuda =
-        lazy (
-            try
-                Device.Default.Name |> ignore
-                true
-            with
-            _ ->    false
-        )
-
-    let gpuThresh = 1024 * 1024 * 10
-
-    let getWorker () = if hasCuda.Force() then Some(Device.Default) else None
-
     let blockSize = 512
     let worker = Worker.Default
     let target = GPUModuleTarget.Worker worker

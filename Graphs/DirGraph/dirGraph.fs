@@ -19,7 +19,7 @@ open GpuGoodies
 /// </summary>
 [<StructuredFormatDisplay("{AsEnumerable}")>]
 type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int seq, verticesNameToOrdinal : IDictionary<'a, int>) as this =
-
+    let gpuThresh = 10 * 1024 * 1024
     let rowIndex  = rowIndex.ToArray()
     let colIndex = colIndex.ToArray()
     let nEdges = colIndex.Length
@@ -45,6 +45,15 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
 
     let asOrdinalsEnumerable () =
         Seq.init nVertices (fun i -> i, getVertexConnections i)
+
+    let hasCuda =
+        lazy (
+            try
+                Device.Default.Name |> ignore
+                true
+            with
+            _ ->    false
+        )
 
     let reverse =
         lazy (
@@ -114,6 +123,30 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             |> Array.map (fun c -> distinctColors.[c])
         )
 
+    let spanningTree = 
+        lazy(
+                let edges = List<int * int>()
+
+                // bfs traversal
+                let visited = HashSet<int>()
+                let queue = Queue<int>()
+                queue.Enqueue 0
+
+                while queue.Count > 0 do
+                    let vertex = queue.Dequeue ()
+                    if not (visited.Contains vertex) then
+                        visited.Add vertex |> ignore
+
+                        (getVertexConnections vertex).Except(visited).Except(queue)
+                        |> Seq.iter (fun v ->
+                            queue.Enqueue v
+                            edges.Add(vertex, v)
+                        )
+
+                edges |> Seq.map(fun (st, e) -> verticesOrdinalToNames.[st], verticesOrdinalToNames.[e])
+                |> HashSet
+        )
+
     member this.NumVertices = nVertices
     member this.NumEdges = nEdges
 
@@ -174,32 +207,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// <summary>
     /// Finding the spanning tree by bfs traversal
     /// </summary>
-    member this.SpanningTree =
-        (lazy(
-                let edges = List<int * int>()
-
-                // bfs traversal
-                let visited = HashSet<int>()
-                let queue = Queue<int>()
-                queue.Enqueue 0
-
-                while queue.Count > 0 do
-                    let vertex = queue.Dequeue ()
-                    if not (visited.Contains vertex) then
-                        visited.Add vertex |> ignore
-
-                        (getVertexConnections vertex).Except(visited).Except(queue)
-                        |> Seq.iter (fun v ->
-                            queue.Enqueue v
-                            edges.Add(vertex, v)
-                        )
-
-                edges |> Seq.map(fun (st, e) -> verticesOrdinalToNames.[st], verticesOrdinalToNames.[e])
-                |> HashSet
-        )).Force()
-
-    // GPU worker
-    member private this.Worker = getWorker()
+    member this.SpanningTree = spanningTree.Force()
 
     member this.IsConnected = this.Partition() |> Array.distinct |> Array.length |> ((=) 1)
 
@@ -249,12 +257,6 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             |> fun c -> c.Gather()
         else
             partitionLinear.Force()
-
-    /// <summary>
-    /// Whether or not we are goint to use transparent edges
-    /// When visualizing the spanning tree
-    /// </summary>
-    member val CleanSpanningTree = true with get, set
 
     override this.Equals g2 =
         match g2 with

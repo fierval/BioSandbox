@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EmguCV.3.1.0.1\build\EmguCV.props" Condition="Exists('..\packages\EmguCV.3.1.0.1\build\EmguCV.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -57,6 +58,8 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets'))" />
+    <Error Condition="!Exists('..\packages\EmguCV.3.1.0.1\build\EmguCV.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EmguCV.3.1.0.1\build\EmguCV.props'))" />
+    <Error Condition="!Exists('..\packages\EmguCV.3.1.0.1\build\EmguCV.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EmguCV.3.1.0.1\build\EmguCV.targets'))" />
   </Target>
   <ItemGroup>
     <Compile Include="successor.fs" />
@@ -70,6 +73,7 @@
     <None Include="Scripts\Perf.fsx" />
     <None Include="Scripts\PartitionTests.fsx" />
     <None Include="Scripts\GCTest.fsx" />
+    <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">
@@ -89,19 +93,34 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.CV.UI">
-      <HintPath>..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.UI.dll</HintPath>
+      <HintPath>..\packages\EmguCV.3.1.0.1\lib\net30\Emgu.CV.UI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Emgu.CV.UI.GL">
+      <HintPath>..\packages\EmguCV.3.1.0.1\lib\net30\Emgu.CV.UI.GL.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Emgu.CV.World">
-      <HintPath>..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.World.dll</HintPath>
+      <HintPath>..\packages\EmguCV.3.1.0.1\lib\net30\Emgu.CV.World.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="FsCheck">
       <HintPath>..\packages\FsCheck.2.5.0\lib\net45\FsCheck.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="mscorlib" />
+    <Reference Include="OpenTK">
+      <HintPath>..\packages\OpenTK.1.1.2225.0\lib\net20\OpenTK.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OpenTK.GLControl">
+      <HintPath>..\packages\OpenTK.GLControl.1.1.2225.0\lib\net20\OpenTK.GLControl.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <ProjectReference Include="..\GpuCompact\GpuCompact.fsproj">
       <Name>GpuCompact</Name>
@@ -123,7 +142,14 @@
       <Project>{f8cfd85a-aeaf-47e4-8c5d-43669a7c00bf}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="ZedGraph">
+      <HintPath>..\packages\ZedGraph.5.1.5\lib\ZedGraph.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
+  <Import Project="..\packages\EmguCV.3.1.0.1\build\EmguCV.targets" Condition="Exists('..\packages\EmguCV.3.1.0.1\build\EmguCV.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
