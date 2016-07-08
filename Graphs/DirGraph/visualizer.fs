@@ -48,16 +48,16 @@ module Visualizer =
         let graphClose = "}"
 
         let colorOut, colorIn, colorBoth = coloring subgraph subgraphRev inConMin outConMin
-
-        let edges = spanEdges.ToList()
+        let displayingSpanning = spanEdges.Count <> 0
 
         // used when we have a spanning tree to display
         let genEdge (out : 'a) (in' : 'a) =
-            if spanEdges.Count = 0  then
+            if not displayingSpanning  then
                 String.Format("{0} -> {1}", out, in')
             elif not (spanEdges.Contains((out, in'))) then
                 String.Format("{0} -> {1} [color={2}]", out, in', if whiteWashNonSpanningEdges then "transparent" else "blue")
             else
+                spanEdges.Remove((out, in')) |> ignore
                 String.Format("{0} -> {1} [color = red]", out, in')
 
         let visualizable =

@@ -44,8 +44,9 @@ StrGraph.SaveStrs(euler, @"c:\temp\greuler.txt")
 
 let euler1 = StrGraph.FromFile(@"c:\temp\greuler.txt")
 
-grs.Visualize()
-
-let grund = StrGraph.CreateUndirected grs
-
+let s1 = ["a -> b, c, d"; "b -> a, c"; "d -> e, f"; "e -> f"]
+let g1 = StrGraph.FromStrings s1
+g1.Visualize()
+let grund = StrGraph.CreateUndirected g1
 grund.Visualize()
+grund.Visualize(spanningTree = true)
