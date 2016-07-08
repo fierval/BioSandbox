@@ -89,28 +89,30 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             pref.Length <> rows.Length && remains.Length + middle.Length + pref.Length = rows.Length
         )
 
-    let partitionLinear () =
-        let mutable goOn = true
-        let colors = [|0..nVertices - 1|]
-        let edges = this.OrdinalEdges
+    let partitionLinear =
+        lazy (
+            let mutable goOn = true
+            let colors = [|0..nVertices - 1|]
+            let edges = this.OrdinalEdges
 
-        while goOn do
-            goOn <- false
-            for edge in edges do
-                let i, j = edge
-                let colorI, colorJ = colors.[i], colors.[j]
+            while goOn do
+                goOn <- false
+                for edge in edges do
+                    let i, j = edge
+                    let colorI, colorJ = colors.[i], colors.[j]
 
-                if colorI < colorJ then
-                    goOn <- true
-                    colors.[j] <- colorI
-                elif colorJ < colorI then
-                    goOn <- true
-                    colors.[i] <- colorJ
+                    if colorI < colorJ then
+                        goOn <- true
+                        colors.[j] <- colorI
+                    elif colorJ < colorI then
+                        goOn <- true
+                        colors.[i] <- colorJ
 
-        // normalize colors to run the range of [0..n - 1] (n = # of colors)
-        let distinctColors = colors |> Array.distinct |> Array.sort |> Array.mapi (fun i value -> value, i) |> Map.ofArray
-        colors
-        |> Array.map (fun c -> distinctColors.[c])
+            // normalize colors to run the range of [0..n - 1] (n = # of colors)
+            let distinctColors = colors |> Array.distinct |> Array.sort |> Array.mapi (fun i value -> value, i) |> Map.ofArray
+            colors
+            |> Array.map (fun c -> distinctColors.[c])
+        )
 
     member this.NumVertices = nVertices
     member this.NumEdges = nEdges
@@ -147,9 +149,11 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// Array of tuples of edge ordinals
     /// </summary>
     member this.OrdinalEdges =
-        [|0..nVertices - 1|]
-        |> Array.map (fun v -> getVertexConnections v |> Array.map (fun c -> v, c))
-        |> Array.concat
+        (lazy (
+                [|0..nVertices - 1|]
+                |> Array.map (fun v -> getVertexConnections v |> Array.map (fun c -> v, c))
+                |> Array.concat
+        )).Force()
 
     /// <summary>
     /// Array of tuples of all graph edges
@@ -157,6 +161,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     member this.Edges =
         this.OrdinalEdges
         |> Array.map (fun (start, end') -> verticesOrdinalToNames.[start], verticesOrdinalToNames.[end'])
+
     /// <summary>
     /// Finds all connected components and returns them as a list of vertex sets.
     /// </summary>
@@ -165,6 +170,35 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
         |> Array.zip [|0..nVertices - 1|]
         |> Array.groupBy snd
         |> Array.map (fun (_, color) -> color |> Array.map (fun (v, c) -> verticesOrdinalToNames.[v]) )
+
+    /// <summary>
+    /// Finding the spanning tree by bfs traversal
+    /// </summary>
+    member this.SpanningTree () =
+        let edges = List<int * int>()
+
+        // bfs traversal
+        let visited = HashSet<int>()
+        let queue = Queue<int>()
+        queue.Enqueue 0
+
+        while queue.Count > 0 do
+            let vertex = queue.Dequeue ()
+            if not (visited.Contains vertex) then
+                visited.Add vertex |> ignore
+
+            (getVertexConnections vertex).Except(visited)
+            |> Seq.iter (fun v ->
+                queue.Enqueue v
+                edges.Add(vertex, v)
+            )
+
+        // map edges to their indices
+        let dictEdges =
+            Array.zip [|0..this.NumEdges - 1|] this.OrdinalEdges
+            |> fun ed -> ed.ToDictionary(snd, fst)
+
+        edges |> Seq.map (fun e -> dictEdges.[e]) |> Seq.toArray
 
     // GPU worker
     member private this.Worker = getWorker()
@@ -216,7 +250,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             partitionGpu dStart dEnd nVertices
             |> fun c -> c.Gather()
         else
-            partitionLinear ()
+            partitionLinear.Force()
 
     override this.Equals g2 =
         match g2 with

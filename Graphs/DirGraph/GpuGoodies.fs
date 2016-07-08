@@ -90,8 +90,8 @@ module GpuGoodies =
 
         let dStart = worker.Malloc<int>(colIndex.Length)
         let dEnd = worker.Malloc<int>(colIndex.Length)
-        let dRowIndex = worker.Malloc(rowIndex)
-        let dColIndex = worker.Malloc(colIndex)
+        use dRowIndex = worker.Malloc(rowIndex)
+        use dColIndex = worker.Malloc(colIndex)
 
         worker.Launch <@ toEdgesKernel @> lp dRowIndex.Ptr len dColIndex.Ptr dStart.Ptr dEnd.Ptr
 

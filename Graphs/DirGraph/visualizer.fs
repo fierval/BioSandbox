@@ -42,11 +42,24 @@ module Visualizer =
         outInVertices |> toColor "blue"
 
     // Create a "graph" or a "cluster" visualization based on clusterN parameter
-    let internal visualizeSubgraph (subgraph : GraphSeq<'a>) (subgraphRev : GraphSeq<'a>) outConMin inConMin clusterN =
+    let internal visualizeSubgraph (subgraph : GraphSeq<'a>) (subgraphRev : GraphSeq<'a>) outConMin inConMin clusterN (spanEdges : int []) =
         let graphOpen = if clusterN >= 0 then "subgraph cluster_" + clusterN.ToString() + "{ color = red; " else "digraph {"
         let graphClose = "}"
 
         let colorOut, colorIn, colorBoth = coloring subgraph subgraphRev inConMin outConMin
+
+        let mutable i = 0
+        let edges = spanEdges.ToList()
+
+        // used when we have a spanning tree to display
+        let genEdge (out : string) (in' : string) i =
+            if spanEdges.Length = 0 then
+                String.Format("{0} -> {1}", out, in')
+            else
+                let idx = edges.IndexOf(i)
+                if i < 0 then String.Format("{0} -> 1", out, in')
+                else
+                    String.Format("{0} -> {1} [color = red]", out, in')
 
         let visualizable =
             subgraph
@@ -54,19 +67,24 @@ module Visualizer =
                 (fun (v, c) ->
                     if c.Length = 0 then v.ToString()
                     else
-                    c
-                    |> Array.map (fun s -> v.ToString() + " -> " + s.ToString())
-                    |> Array.reduce (fun acc e -> acc + "; " + e))
+                        let out = v.ToString()
+                        c
+                        |> Array.map (fun in' ->
+                            i <- i + 1
+                            genEdge out (in'.ToString()) (i - 1)
+                            )
+                        |> Array.reduce (fun acc e -> acc + "; " + e)
+                        )
             |> Seq.reduce (fun acc e -> acc + "; " + e)
             |> fun v -> graphOpen + colorOut + colorIn + colorBoth + v + graphClose
 
         visualizable
 
-    let internal visualizeEntire subgraph subgraphRev outConMin inConMin visualizer =
-        visualizeSubgraph subgraph subgraphRev outConMin inConMin  -1
+    let internal visualizeEntire subgraph subgraphRev outConMin inConMin spanning visualizer =
+        visualizeSubgraph subgraph subgraphRev outConMin inConMin -1 spanning
         |> visualizer
 
-    let internal visualizeAll (graph : DirectedGraph<'a>) outConMin inConMin clusters euler eulerLabels =
+    let internal visualizeAll (graph : DirectedGraph<'a>) outConMin inConMin clusters euler eulerLabels spanning=
         if euler then
             let eulerPath = graph.FindEulerPath()
             if eulerPath |> Seq.isEmpty then failwith "Graph not Eulerian"
@@ -96,14 +114,16 @@ module Visualizer =
                     |> Array.map (fun h -> h.AsEnumerable() |> Seq.toList)
                 else [||]
 
-            if not clusters then visualizeEntire self selfRev outConMin inConMin (if graph.NumVertices <= nDotThreshold then visualizeDot else visualizeSfdp)
+            let spanEdges = if spanning then graph.SpanningTree() else [||]
+
+            if not clusters then visualizeEntire self selfRev outConMin inConMin spanEdges (if graph.NumVertices <= nDotThreshold then visualizeDot else visualizeSfdp)
             else
                 connectedComponents
                 |> Array.mapi
                     (fun i vertices ->
                         let subgraph = vertices |> graph.Subgraph
                         let subgraphRev = vertices |> rev.Subgraph
-                        visualizeSubgraph subgraph subgraphRev outConMin inConMin i
+                        visualizeSubgraph subgraph subgraphRev outConMin inConMin i [||]
                     )
                 |> Array.reduce (+)
                 |> fun gr -> createVisualClusters ("digraph { " + gr + "}")
@@ -117,11 +137,12 @@ module Visualizer =
         /// </summary>
         /// <param name="into">Optional. If present - should be the minimum number of inbound connections which would select the vertex for coloring.</param>
         /// <param name="out">Optional. If present - should be the minimum number of outbound connections which would select the vertex for coloring.</param>
-        member graph.Visualize(?into, ?out, ?clusters, ?euler, ?eulerLabels : string seq) =
+        member graph.Visualize(?into, ?out, ?clusters, ?euler, ?eulerLabels : string seq, ?spanningTree : bool) =
             let outConMin = defaultArg out 0
             let inConMin = defaultArg into 0
             let clusters = defaultArg clusters false
             let euler = defaultArg euler false
             let eulerLabels = defaultArg eulerLabels Seq.empty
+            let spanning = defaultArg spanningTree false
 
-            visualizeAll graph outConMin inConMin clusters euler eulerLabels
+            visualizeAll graph outConMin inConMin clusters euler eulerLabels spanning

@@ -15,22 +15,33 @@ open System
 open DataGen
 open GpuDistinct
 open System.Linq
+open System.Diagnostics
 
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let grf = StrGraph.GenerateEulerGraph(100000, 5)
+let n = 15 * 1024 * 10
+let k = 5
+let sw = Stopwatch.StartNew()
 
+let grf = StrGraph.GenerateEulerGraph(n, k)
+sw.Stop()
+
+sw.Restart()
 // reverse the graph to identify the row index of
 // edges "coming in"
 let dStart, dEnd, dRevRowIndex = reverseGpu grf
+sw.Stop()
 
+sw.Restart()
 // find successor edges
 let succ = successors dStart dRevRowIndex
+sw.Stop()
 
 // partition
+sw.Restart()
 let colors = partitionLinear succ
-
+sw.Stop()
 let sg = StrGraph.FromVectorOfInts succ
 
 let rowIndex = dRevRowIndex.Gather()
@@ -38,3 +49,7 @@ let rowIndex = dRevRowIndex.Gather()
 // create CG graph
 let gr, links = generateCircuitGraph rowIndex colors
 //gr.Visualize()
+
+sw.Restart()
+grf.FindEulerPath()
+sw.Stop()

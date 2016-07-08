@@ -4,3 +4,4 @@
 #load "../successor.fs"
       "../partition.fs"
       "../gcedges.fs"
+      "../bfs.fs"
