@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Graphs", "Graphs\Graphs.fsproj", "{CAA4EB40-CEE8-4910-86E5-FFBC1ECC8E89}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SparseMatrix", "Graphs\SparseMatrix.fsproj", "{CAA4EB40-CEE8-4910-86E5-FFBC1ECC8E89}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DrawGraph", "Graphs\DrawGraph\DrawGraph.fsproj", "{F8CFD85A-AEAF-47E4-8C5D-43669A7C00BF}"
 EndProject
