@@ -174,31 +174,29 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// <summary>
     /// Finding the spanning tree by bfs traversal
     /// </summary>
-    member this.SpanningTree () =
-        let edges = List<int * int>()
+    member this.SpanningTree =
+        (lazy(
+                let edges = List<int * int>()
 
-        // bfs traversal
-        let visited = HashSet<int>()
-        let queue = Queue<int>()
-        queue.Enqueue 0
+                // bfs traversal
+                let visited = HashSet<int>()
+                let queue = Queue<int>()
+                queue.Enqueue 0
 
-        while queue.Count > 0 do
-            let vertex = queue.Dequeue ()
-            if not (visited.Contains vertex) then
-                visited.Add vertex |> ignore
+                while queue.Count > 0 do
+                    let vertex = queue.Dequeue ()
+                    if not (visited.Contains vertex) then
+                        visited.Add vertex |> ignore
 
-            (getVertexConnections vertex).Except(visited)
-            |> Seq.iter (fun v ->
-                queue.Enqueue v
-                edges.Add(vertex, v)
-            )
+                        (getVertexConnections vertex).Except(visited).Except(queue)
+                        |> Seq.iter (fun v ->
+                            queue.Enqueue v
+                            edges.Add(vertex, v)
+                        )
 
-        // map edges to their indices
-        let dictEdges =
-            Array.zip [|0..this.NumEdges - 1|] this.OrdinalEdges
-            |> fun ed -> ed.ToDictionary(snd, fst)
-
-        edges |> Seq.map (fun e -> dictEdges.[e]) |> Seq.toArray
+                edges |> Seq.map(fun (st, e) -> verticesOrdinalToNames.[st], verticesOrdinalToNames.[e])
+                |> HashSet
+        )).Force()
 
     // GPU worker
     member private this.Worker = getWorker()
@@ -251,6 +249,12 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             |> fun c -> c.Gather()
         else
             partitionLinear.Force()
+
+    /// <summary>
+    /// Whether or not we are goint to use transparent edges
+    /// When visualizing the spanning tree
+    /// </summary>
+    member val CleanSpanningTree = true with get, set
 
     override this.Equals g2 =
         match g2 with

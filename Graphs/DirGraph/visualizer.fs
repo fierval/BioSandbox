@@ -15,6 +15,7 @@ module Visualizer =
 
     type GraphSeq<'a> = seq<'a * 'a []>
     let internal nDotThreshold = 10
+    let mutable internal whiteWashNonSpanningEdges = true
 
     let internal toColor (c : string) (vertices : seq<'a>) =
         if vertices |> Seq.isEmpty then "" else
@@ -42,24 +43,22 @@ module Visualizer =
         outInVertices |> toColor "blue"
 
     // Create a "graph" or a "cluster" visualization based on clusterN parameter
-    let internal visualizeSubgraph (subgraph : GraphSeq<'a>) (subgraphRev : GraphSeq<'a>) outConMin inConMin clusterN (spanEdges : int []) =
+    let internal visualizeSubgraph (subgraph : GraphSeq<'a>) (subgraphRev : GraphSeq<'a>) outConMin inConMin clusterN (spanEdges : HashSet<'a * 'a>) =
         let graphOpen = if clusterN >= 0 then "subgraph cluster_" + clusterN.ToString() + "{ color = red; " else "digraph {"
         let graphClose = "}"
 
         let colorOut, colorIn, colorBoth = coloring subgraph subgraphRev inConMin outConMin
 
-        let mutable i = 0
         let edges = spanEdges.ToList()
 
         // used when we have a spanning tree to display
-        let genEdge (out : string) (in' : string) i =
-            if spanEdges.Length = 0 then
+        let genEdge (out : 'a) (in' : 'a) =
+            if spanEdges.Count = 0  then
                 String.Format("{0} -> {1}", out, in')
+            elif not (spanEdges.Contains((out, in'))) then
+                String.Format("{0} -> {1} [color={2}]", out, in', if whiteWashNonSpanningEdges then "transparent" else "blue")
             else
-                let idx = edges.IndexOf(i)
-                if i < 0 then String.Format("{0} -> 1", out, in')
-                else
-                    String.Format("{0} -> {1} [color = red]", out, in')
+                String.Format("{0} -> {1} [color = red]", out, in')
 
         let visualizable =
             subgraph
@@ -70,9 +69,9 @@ module Visualizer =
                         let out = v.ToString()
                         c
                         |> Array.map (fun in' ->
-                            i <- i + 1
-                            genEdge out (in'.ToString()) (i - 1)
+                            genEdge v in'
                             )
+
                         |> Array.reduce (fun acc e -> acc + "; " + e)
                         )
             |> Seq.reduce (fun acc e -> acc + "; " + e)
@@ -114,7 +113,7 @@ module Visualizer =
                     |> Array.map (fun h -> h.AsEnumerable() |> Seq.toList)
                 else [||]
 
-            let spanEdges = if spanning then graph.SpanningTree() else [||]
+            let spanEdges = if spanning then graph.SpanningTree else HashSet<'a * 'a>()
 
             if not clusters then visualizeEntire self selfRev outConMin inConMin spanEdges (if graph.NumVertices <= nDotThreshold then visualizeDot else visualizeSfdp)
             else
@@ -123,7 +122,7 @@ module Visualizer =
                     (fun i vertices ->
                         let subgraph = vertices |> graph.Subgraph
                         let subgraphRev = vertices |> rev.Subgraph
-                        visualizeSubgraph subgraph subgraphRev outConMin inConMin i [||]
+                        visualizeSubgraph subgraph subgraphRev outConMin inConMin i (HashSet<'a * 'a>())
                     )
                 |> Array.reduce (+)
                 |> fun gr -> createVisualClusters ("digraph { " + gr + "}")
@@ -132,6 +131,7 @@ module Visualizer =
     /// Visualizer extenstion
     /// </summary>
     type DirectedGraph<'a when 'a: comparison> with
+
         /// <summary>
         /// Visualize the graph. Should in/out connections be emphasized
         /// </summary>
@@ -144,5 +144,6 @@ module Visualizer =
             let euler = defaultArg euler false
             let eulerLabels = defaultArg eulerLabels Seq.empty
             let spanning = defaultArg spanningTree false
+            whiteWashNonSpanningEdges <- graph.CleanSpanningTree
 
             visualizeAll graph outConMin inConMin clusters euler eulerLabels spanning
