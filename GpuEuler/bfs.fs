@@ -82,4 +82,4 @@ namespace GpuEuler
                 flag <- not flag
 
             worker.Launch <@ pruneKernel @> lp dRowIndex.Ptr dColIndex.Ptr len dEdges.Ptr dCount.Ptr dLevel.Ptr
-            dEdges.Gather()
+            dEdges.Gather(), dCount.Gather(), dLevel.Gather()

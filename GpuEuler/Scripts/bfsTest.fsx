@@ -19,36 +19,36 @@ open System.Collections.Generic
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let rnd = Random()
-for i = 1 to 100 do
-    let euler = StrGraph.GenerateEulerGraph(rnd.Next(10, 100), rnd.Next(1, 10), path=false)
-    printfn "test: %d" i
-    let edges = bfs euler
-    let sptreeGpu = 
-        (euler.Edges, edges)
-        ||> Array.map2 (fun (s, e) incl -> (s, e, incl))
-        |> Array.filter (fun (_, _, incl) -> incl)
-        |> Array.map (fun (a, b, _) -> (a, b))
 
-    euler.Visualize(spanningTree=true, washNonSpanning = true)
+let euler = StrGraph.GenerateEulerGraph(18, 4, path=false)
 
-    euler.SpanningTree <- HashSet sptreeGpu
+let edges, counts, levels = bfs euler
+let sptreeGpu = 
+    (euler.Edges, edges)
+    ||> Array.map2 (fun (s, e) incl -> (s, e, incl))
+    |> Array.filter (fun (_, _, incl) -> incl)
+    |> Array.map (fun (a, b, _) -> (a, b))
 
-    euler.Visualize(spanningTree=true, washNonSpanning = true)
+euler.Visualize(spanningTree=true, washNonSpanning = true)
 
-    let isSpanningTree (gr : StrGraph) (sptree : seq<string * string>) =
-        let sptree = sptree.ToArray()
-        sptree.Length = gr.NumVertices - 1 
-        &&
-        gr.Edges.Intersect(sptree).Count() = sptree.Length 
-        &&
-        (
-            let starts, ends = sptree |> Array.unzip
-            starts.Union(ends).ToArray()
-            |> Array.distinct
-            |> Array.sort
-            |> fun a -> a.Length = gr.NumVertices
-        )
+euler.SpanningTree <- HashSet sptreeGpu
 
-    if not (isSpanningTree euler sptreeGpu) then
-        printfn "Failure!"
+euler.Visualize(spanningTree=true, washNonSpanning = true)
+
+let isSpanningTree (gr : StrGraph) (sptree : seq<string * string>) =
+    let sptree = sptree.ToArray()
+    sptree.Length = gr.NumVertices - 1 
+    &&
+    gr.Edges.Intersect(sptree).Count() = sptree.Length 
+    &&
+    (
+        let starts, ends = sptree |> Array.unzip
+        starts.Union(ends).ToArray()
+        |> Array.distinct
+        |> Array.sort
+        |> fun a -> a.Length = gr.NumVertices
+    )
+
+let gr = euler
+let sptree = sptreeGpu
+isSpanningTree euler sptreeGpu
