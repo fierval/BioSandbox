@@ -29,6 +29,22 @@ namespace GpuEuler
                             edges.[i] <- true
                             goOn.[0] <- true
 
+        [<Kernel; ReflectedDefinition>]
+        let pruneKernel (rowIndex : deviceptr<int>) (colIndex : deviceptr<int>) len (edges : deviceptr<bool>) (count : deviceptr<int>) (level : deviceptr<int>) =
+            let idx = blockIdx.x * blockDim.x + threadIdx.x
+            if idx < len then
+                let mutable cnt = 0
+
+                let curLevel = level.[idx]
+
+                for i = rowIndex.[idx] to rowIndex.[idx + 1] - 1 do
+                    let vertex = colIndex.[i]
+                    // the current vertex has been visited from the vertex in question
+                    if count.[vertex] > 1 && level.[vertex] = curLevel + 1 then
+                        cnt <- cnt + 1
+                        // if the current vertex has been visited more than once - remove the edge
+                        if cnt > 1 then edges.[i] <- false
+            
         /// <summary>
         /// Generates spanning tree by bfs on the gpu
         //  In order to use weak connectivity, need to generate the undirected graph first
@@ -39,8 +55,6 @@ namespace GpuEuler
             let numEdges = gr.NumEdges
             let len = gr.NumVertices
             let lp = LaunchParam(divup len blockSize, blockSize)
-
-            //let dStart, dEnd = getEdgesGpu gr.RowIndex gr.ColIndex // edges
 
             let allFalse = Array.create len false
             let allZero = Array.zeroCreate len
@@ -67,4 +81,5 @@ namespace GpuEuler
                 worker.Launch <@ bfsKernel @> lp (getFront flag).Ptr len (getFront (not flag)).Ptr dVisted.Ptr dLevel.Ptr dCount.Ptr dEdges.Ptr dRowIndex.Ptr dColIndex.Ptr goOn.Ptr
                 flag <- not flag
 
+            worker.Launch <@ pruneKernel @> lp dRowIndex.Ptr dColIndex.Ptr len dEdges.Ptr dCount.Ptr dLevel.Ptr
             dEdges.Gather()
