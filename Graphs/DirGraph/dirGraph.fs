@@ -207,7 +207,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// <summary>
     /// Finding the spanning tree by bfs traversal
     /// </summary>
-    member this.SpanningTree = spanningTree.Force()
+    member val SpanningTree = spanningTree.Force() with get, set
 
     member this.IsConnected = this.Partition() |> Array.distinct |> Array.length |> ((=) 1)
 

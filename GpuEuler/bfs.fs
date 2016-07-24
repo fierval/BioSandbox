@@ -40,7 +40,7 @@ namespace GpuEuler
             let len = gr.NumVertices
             let lp = LaunchParam(divup len blockSize, blockSize)
 
-            let dStart, dEnd = getEdgesGpu gr.RowIndex gr.ColIndex // edges
+            //let dStart, dEnd = getEdgesGpu gr.RowIndex gr.ColIndex // edges
 
             let allFalse = Array.create len false
             let allZero = Array.zeroCreate len
@@ -65,5 +65,6 @@ namespace GpuEuler
                 goOn.ScatterScalar(false)
 
                 worker.Launch <@ bfsKernel @> lp (getFront flag).Ptr len (getFront (not flag)).Ptr dVisted.Ptr dLevel.Ptr dCount.Ptr dEdges.Ptr dRowIndex.Ptr dColIndex.Ptr goOn.Ptr
+                flag <- not flag
 
             dEdges.Gather()

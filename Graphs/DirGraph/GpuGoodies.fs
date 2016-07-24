@@ -84,6 +84,10 @@ module GpuGoodies =
 
         dStart, dEnd
 
+    let getEdges (rowIndex : int []) (colIndex : int []) =
+        let dStart, dEnd = getEdgesGpu rowIndex colIndex
+        dStart.Gather(), dEnd.Gather()
+
     let getBitCount n =
         let rec getNextPowerOfTwoRec n acc =
             if n = 0 then acc
