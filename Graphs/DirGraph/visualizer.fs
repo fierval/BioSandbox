@@ -50,6 +50,8 @@ module Visualizer =
         let colorOut, colorIn, colorBoth = coloring subgraph subgraphRev inConMin outConMin
         let displayingSpanning = spanEdges.Count <> 0
 
+        let spanEdges = HashSet(spanEdges)
+
         // used when we have a spanning tree to display
         let genEdge (out : 'a) (in' : 'a) =
             if not displayingSpanning  then

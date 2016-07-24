@@ -30,7 +30,7 @@ namespace GpuEuler
                             goOn.[0] <- true
 
         /// <summary>
-        /// Generates bfs on the gpu
+        /// Generates spanning tree by bfs on the gpu
         //  In order to use weak connectivity, need to generate the undirected graph first
         /// </summary>
         /// <param name="gr"></param>
@@ -66,3 +66,4 @@ namespace GpuEuler
 
                 worker.Launch <@ bfsKernel @> lp (getFront flag).Ptr len (getFront (not flag)).Ptr dVisted.Ptr dLevel.Ptr dCount.Ptr dEdges.Ptr dRowIndex.Ptr dColIndex.Ptr goOn.Ptr
 
+            dEdges.Gather()

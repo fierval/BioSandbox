@@ -73,6 +73,7 @@
     <None Include="Scripts\Perf.fsx" />
     <None Include="Scripts\PartitionTests.fsx" />
     <None Include="Scripts\GCTest.fsx" />
+    <None Include="Scripts\bfsTest.fsx" />
     <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>
