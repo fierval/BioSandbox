@@ -123,7 +123,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             |> Array.map (fun c -> distinctColors.[c])
         )
 
-    let spanningTree = 
+    let spanningTree =
         lazy(
                 let edges = List<int * int>()
 
@@ -131,17 +131,16 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
                 let visited = HashSet<int>()
                 let queue = Queue<int>()
                 queue.Enqueue 0
+                visited.Add 0 |> ignore
 
                 while queue.Count > 0 do
                     let vertex = queue.Dequeue ()
-                    if not (visited.Contains vertex) then
-                        visited.Add vertex |> ignore
 
-                        (getVertexConnections vertex).Except(visited).Except(queue)
-                        |> Seq.iter (fun v ->
+                    for v in getVertexConnections vertex do
+                        if not (visited.Contains v) then
                             queue.Enqueue v
                             edges.Add(vertex, v)
-                        )
+                            visited.Add(v) |> ignore
 
                 edges |> Seq.map(fun (st, e) -> verticesOrdinalToNames.[st], verticesOrdinalToNames.[e])
                 |> HashSet
@@ -207,7 +206,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// <summary>
     /// Finding the spanning tree by bfs traversal
     /// </summary>
-    member val SpanningTree = spanningTree.Force() with get, set
+    member this.SpanningTree = spanningTree.Force()
 
     member this.IsConnected = this.Partition() |> Array.distinct |> Array.length |> ((=) 1)
 

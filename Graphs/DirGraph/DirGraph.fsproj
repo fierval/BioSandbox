@@ -65,6 +65,8 @@
     <None Include="Scripts\dirGraphTest.fsx" />
     <None Include="Scripts\debruijn.fsx" />
     <None Include="Scripts\rosalindEuler.fsx" />
+    <None Include="Scripts\load-references-release.fsx" />
+    <None Include="Scripts\load-project-release.fsx" />
     <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>

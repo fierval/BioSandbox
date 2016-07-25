@@ -74,6 +74,9 @@
     <None Include="Scripts\PartitionTests.fsx" />
     <None Include="Scripts\GCTest.fsx" />
     <None Include="Scripts\bfsTest.fsx" />
+    <None Include="Scripts\bfsPerf.fsx" />
+    <None Include="Scripts\load-references-release.fsx" />
+    <None Include="Scripts\load-project-release.fsx" />
     <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>

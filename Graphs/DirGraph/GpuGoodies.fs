@@ -5,7 +5,7 @@ module GpuGoodies =
     open Alea.CUDA.Unbound
     open Alea.CUDA.Utilities
 
-    let blockSize = 512
+    let blockSize = 1024
     let worker = Worker.Default
     let target = GPUModuleTarget.Worker worker
 

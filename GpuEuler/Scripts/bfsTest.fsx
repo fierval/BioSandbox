@@ -20,8 +20,9 @@ Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIREC
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
 let rnd = Random()
-for i = 1 to 100 do
-    let euler = StrGraph.GenerateEulerGraph(rnd.Next(20, 1000), rnd.Next(1, 20), path=false)
+let N = 1 * 1024 * 10
+for i = 1 to 10 do
+    let euler = StrGraph.GenerateEulerGraph(N, 3, path=false)
     printfn "Test %d" i
     let edges = bfs euler
     let sptreeGpu =
