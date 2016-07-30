@@ -173,3 +173,25 @@ module Extensions =
                 |> Array.scan (+) 0
 
             DirectedGraph<'a>(rowIndex, colIndex, gr.NamedVertices)
+
+        /// <summary>
+        /// Generates a graph from the integer list of edges
+        /// </summary>
+        /// <param name="edges"></param>
+        static member FromIntEdges (edges : seq<int * int>) =
+            let adjecency =
+                edges
+                |> Seq.groupBy fst
+                |> Seq.sortBy fst
+                |> Seq.map (fun (key, sq) -> string key + "->" + (sq |> Seq.map snd |> Seq.fold (fun st e -> st + "," + string e) ""))
+
+            StrGraph.FromStrings adjecency
+
+        static member FromStrEdges (edges : seq<string * string>) =
+            let adjecency =
+                edges
+                |> Seq.groupBy fst
+                |> Seq.sortBy fst
+                |> Seq.map (fun (key, sq) -> key + "->" + (sq |> Seq.map snd |> Seq.reduce (fun st e -> st + "," + e)))
+
+            StrGraph.FromStrings adjecency

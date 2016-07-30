@@ -20,24 +20,32 @@ Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIREC
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
 let sw = Stopwatch()
-let N = 10 * 1024 * 1024
+let N = 15
 
 sw.Restart()
 let euler = StrGraph.GenerateEulerGraph(N, 3, path=false)
 sw.Stop()
 printfn "Generated euler graph in %A" sw.Elapsed
-//euler.Visualize(spanningTree = true)
+euler.Visualize(spanningTree = true, washNonSpanning = false)
+euler.Visualize(spanningTree = true, washNonSpanning = true)
+
 sw.Restart()
 let sptree = euler.SpanningTree
+let linearSpanTree = StrGraph.FromStrEdges sptree
+linearSpanTree.Visualize()
+
 printfn "Spanning tree generated in %A" sw.Elapsed
 
 sw.Restart()
 let edges = bfs euler
-//let sptreeGpu =
-//    (euler.Edges, edges)
-//    ||> Array.map2 (fun (s, e) incl -> (s, e, incl))
-//    |> Array.filter (fun (_, _, incl) -> incl)
-//    |> Array.map (fun (a, b, _) -> (a, b))
+let sptreeGpu =
+    (euler.Edges, edges)
+    ||> Array.map2 (fun (s, e) incl -> (s, e, incl))
+    |> Array.filter (fun (_, _, incl) -> incl)
+    |> Array.map (fun (a, b, _) -> (a, b))
+
+let gpuGenSpanTree = StrGraph.FromStrEdges sptreeGpu
+gpuGenSpanTree.Visualize()
 
 sw.Stop()
 printfn "Spanning tree generated in %A" sw.Elapsed
