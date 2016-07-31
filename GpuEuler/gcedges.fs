@@ -9,6 +9,11 @@ namespace GpuEuler
         open System.Collections.Generic
         open GpuCompact
 
+        /// <summary>
+        /// This takes the REVERSE graph rowIndex and generates an array of valid swaps
+        /// </summary>
+        /// <param name="rowIndex">rowIndex of a reverse eulerian graph</param>
+        /// <param name="colors">partition created in the previous step</param>
         let generateCircuitGraph (rowIndex : int []) (colors : int []) =
             let numColors = 1 + (colors |> Array.max)
             let numVertices = rowIndex.Length - 1

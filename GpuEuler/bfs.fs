@@ -29,13 +29,26 @@ namespace GpuEuler
                                 edges.[i] <- true
                                 goOn.[0] <- true
 
+        /// <summary>
+        /// Map edges to swips
+        /// </summary>
+        /// <param name="edges"> Edges of the partitioned graph spanning tree</param>
+        /// <param name="len"> Number of edges </param>
+        /// <param name="links"> Mapping of partitined edges -> real graph edges</param>
+        /// <param name="swips"> Switching pairs of successors</param>
+        [<Kernel; ReflectedDefinition>]
+        let selectSwipsKernel (edges : deviceptr<bool>) len (links : deviceptr<int>) (swips : deviceptr<bool>) =
+
+            let idx = blockIdx.x * blockDim.x + threadIdx.x
+            if idx < len then
+                swips.[links.[idx]] <- edges.[idx]
 
         /// <summary>
         /// Generates spanning tree by bfs on the gpu
         //  In order to use weak connectivity, need to generate the undirected graph first
         /// </summary>
         /// <param name="gr"></param>
-        let bfs (gr : StrGraph) =
+        let bfsGpu (gr : StrGraph) =
 
             let numEdges = gr.NumEdges
             let len = gr.NumVertices
@@ -65,4 +78,24 @@ namespace GpuEuler
                 worker.Launch <@ bfsKernel @> lp (getFront flag).Ptr len (getFront (not flag)).Ptr dVisted.Ptr dLevel.Ptr dEdges.Ptr dRowIndex.Ptr dColIndex.Ptr goOn.Ptr
                 flag <- not flag
 
-            dEdges.Gather()
+            dEdges
+
+        let bfs (gr : StrGraph) =
+            bfsGpu gr |> fun dEdges -> dEdges.Gather()
+
+        /// <summary>
+        /// Generates swips from the partitioned graph and a mapping array
+        /// From partitioned to real graph edges
+        /// </summary>
+        /// <param name="gr">Partitioned graph</param>
+        /// <param name="links">Map from partitioned to original edges</param>
+        /// <param name= "numOfOriginalGraphEdges">Number of original graph edges</param>
+        let generateSwipsGpu (gr : StrGraph) (links : int []) numOfOriginalGraphEdges =
+            let dSwips = worker.Malloc(Array.create numOfOriginalGraphEdges false)
+            use dLinks = worker.Malloc(links)
+            let lp = LaunchParam(divup gr.NumEdges blockSize, blockSize)
+            use dEdges = bfsGpu gr
+
+            worker.Launch<@ selectSwipsKernel @> lp dEdges.Ptr gr.NumEdges dLinks.Ptr dSwips.Ptr
+            dSwips
+
