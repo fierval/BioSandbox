@@ -101,8 +101,8 @@ module SuccessorGenerator =
         let starts = dStart.Gather()
         let successors = Array.zeroCreate starts.Length
 
-        [|0..starts.Length - 1|].AsParallel()
-            .ForAll
+        [|0..starts.Length - 1|]
+            |> Array.iter
             (fun i ->
                 successors.[rowIndex.[starts.[i]]] <- i
                 rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1

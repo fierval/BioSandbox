@@ -5,14 +5,27 @@ module GpuGoodies =
     open Alea.CUDA.Unbound
     open Alea.CUDA.Utilities
 
+    /// <summary>
+    /// To be called from other modules
+    /// </summary>
+    let hasCuda =
+        lazy (
+            try
+                Device.Default.Name |> ignore
+                true
+            with
+            _ ->    false
+        )
+
+    let gpuThresh = 10 * 1024 * 1024
     let blockSize = 1024
-    let worker = Worker.Default
-    let target = GPUModuleTarget.Worker worker
+    let worker = if hasCuda.Force() then Worker.Default else Unchecked.defaultof<Worker>
+    let target = if hasCuda.Force() then GPUModuleTarget.Worker worker else Unchecked.defaultof<GPUModuleTarget>
 
     [<Kernel; ReflectedDefinition>]
     let copyGpu (source : deviceptr<'a>) (dest : deviceptr<'a>) len =
         let idx = blockIdx.x * blockDim.x + threadIdx.x
-        if idx < len - 1 then
+        if idx < len then
             dest.[idx] <- source.[idx]
 
     // represent the graph as two arrays. For each vertex v, an edge is a tuple
@@ -150,3 +163,16 @@ module GpuGoodies =
             worker.Launch <@ partionKernel @> lp dStart.Ptr dEnd.Ptr dColor.Ptr dStart.Length dGo.Ptr
 
         dColor
+
+    let arrayCopy (src : int []) =
+        if src.Length > gpuThresh && hasCuda.Force() then
+            let lp = LaunchParam(divup src.Length blockSize, blockSize)
+            let dSrc = worker.Malloc(src)
+            let dDest = worker.Malloc<int>(src.Length)
+
+            worker.Launch <@ copyGpu @> lp dSrc.Ptr dDest.Ptr src.Length
+            dDest.Gather()
+        else
+            let dest = Array.zeroCreate src.Length
+            src.CopyTo(dest, 0)
+            dest
