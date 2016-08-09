@@ -64,4 +64,4 @@ namespace GpuEuler
                 |> Array.map (fun (_, v) -> v.Length)
                 |> Array.scan (+) 0
 
-            (StrGraph.FromInts newRowIndex colIndex), linkPos
+            (StrGraph.FromInts newRowIndex colIndex), linkPos, validity

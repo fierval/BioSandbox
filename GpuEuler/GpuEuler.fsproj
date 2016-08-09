@@ -66,6 +66,7 @@
     <Compile Include="partition.fs" />
     <Compile Include="gcedges.fs" />
     <Compile Include="bfs.fs" />
+    <Compile Include="swaps.fs" />
     <Content Include="packages.config" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
