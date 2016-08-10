@@ -29,9 +29,11 @@ let euler = StrGraph.GenerateEulerGraph(8, 3, path=true)
 //grs.Visualize()
 //grs.Reverse.Visualize()
 grs.Visualize(clusters = true)
+
 //StrGraph.Visualize(gr, clusters = true)
+let dubEuler = StrGraph.CreateUndirected euler
 euler.Visualize(euler=true)
-euler.Visualize(spanningTree=true)
+dubEuler.Visualize(spanningTree=true)
 
 let strsr = ["0 -> 3"; "1 -> 0"; "2 -> 1,6"; "3 -> 2"; "4 -> 2"; "5 -> 4"; "6 -> 5,8"; "7 -> 9"; "8 -> 7"; "9 -> 6"]
 let grr = StrGraph.FromStrings strsr
