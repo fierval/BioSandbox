@@ -48,7 +48,7 @@ namespace GpuEuler
         //  In order to use weak connectivity, need to generate the undirected graph first
         /// </summary>
         /// <param name="gr"></param>
-        let bfsGpu (gr : StrGraph) =
+        let bfsGpu (gr : DirectedGraph<'a>) =
 
             let numEdges = gr.NumEdges
             let len = gr.NumVertices
@@ -80,7 +80,7 @@ namespace GpuEuler
 
             dEdges
 
-        let bfs (gr : StrGraph) =
+        let bfs (gr : DirectedGraph<'a>) =
             bfsGpu gr |> fun dEdges -> dEdges.Gather()
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace GpuEuler
         /// <param name="gr">Partitioned graph</param>
         /// <param name="links">Map from partitioned to original edges</param>
         /// <param name= "numOfOriginalGraphEdges">Number of original graph edges</param>
-        let generateSwipsGpu (gr : StrGraph) (links : int []) numOfOriginalGraphEdges =
+        let generateSwipsGpu (gr : DirectedGraph<'a>) (links : int []) numOfOriginalGraphEdges =
             let dSwips = worker.Malloc(Array.create numOfOriginalGraphEdges false)
             use dLinks = worker.Malloc(links)
             let lp = LaunchParam(divup gr.NumEdges blockSize, blockSize)

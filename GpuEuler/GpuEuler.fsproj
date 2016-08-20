@@ -67,6 +67,7 @@
     <Compile Include="gcedges.fs" />
     <Compile Include="bfs.fs" />
     <Compile Include="swaps.fs" />
+    <Compile Include="euler.fs" />
     <Content Include="packages.config" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />

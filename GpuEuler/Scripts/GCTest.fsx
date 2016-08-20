@@ -35,7 +35,7 @@ sw.Stop()
 
 sw.Restart()
 // find successor edges
-let succ = successors dStart dRevRowIndex
+let succ, _ = successors dStart dRevRowIndex
 sw.Stop()
 
 // partition
@@ -47,7 +47,7 @@ let sg = StrGraph.FromVectorOfInts succ
 let rowIndex = dRevRowIndex.Gather()
 
 // create CG graph
-let gr, links = generateCircuitGraph rowIndex colors
+let gr, links, _ = generateCircuitGraph rowIndex colors
 //gr.Visualize()
 
 sw.Restart()

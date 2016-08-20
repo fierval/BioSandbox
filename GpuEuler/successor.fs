@@ -69,7 +69,7 @@ module SuccessorGenerator =
     /// The "end" array will be the colIndex array for the reversed graph
     /// </summary>
     /// <param name="gr"></param>
-    let reverseGpu (gr : StrGraph) =
+    let reverseGpu (gr : DirectedGraph<'a>) =
 
         // TODO: This needs to be made more efficient
         //if not gr.IsEulerian then failwith "Not Eulerian"
@@ -92,19 +92,19 @@ module SuccessorGenerator =
 
         dStart, dEnd, dRevRowIndex
 
-    let reverse (gr : StrGraph) =
+    let reverse (gr : DirectedGraph<'a>) =
         let dStart, dEnd, dRevRowIndex = reverseGpu gr
-        StrGraph(dRevRowIndex.Gather(), dStart.Gather(), gr.NamedVertices)
+        DirectedGraph<'a>(dRevRowIndex.Gather(), dStart.Gather(), gr.NamedVertices)
 
     let successors (dStart : DeviceMemory<int>) (dRowIndex : DeviceMemory<int>) =
         let rowIndex = dRowIndex.Gather()
         let starts = dStart.Gather()
-        let successors = Array.zeroCreate starts.Length
+        let edgeSuccessors = Array.zeroCreate starts.Length
 
         [|0..starts.Length - 1|]
             |> Array.iter
             (fun i ->
-                successors.[rowIndex.[starts.[i]]] <- i
+                edgeSuccessors.[rowIndex.[starts.[i]]] <- i
                 rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
             )
-        successors
+        edgeSuccessors, rowIndex
