@@ -108,3 +108,17 @@ module SuccessorGenerator =
                 rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
             )
         edgeSuccessors
+
+    let predecessors (gr : DirectedGraph<'a>) =
+        let rowIndex = arrayCopy gr.RowIndex
+        let starts = gr.ColIndex
+
+        let predecessors = Array.zeroCreate starts.Length
+
+        [|0..starts.Length - 1|]
+            |> Array.iter
+            (fun i ->
+                predecessors.[rowIndex.[starts.[i]]] <- i
+                rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
+            )
+        predecessors

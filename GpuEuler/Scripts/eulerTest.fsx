@@ -9,19 +9,15 @@ open Alea.CUDA.Utilities
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let gr = StrGraph.GenerateEulerGraph(12, 5)
-gr.Reverse.Visualize(edges=true)
+let gr = StrGraph.GenerateEulerGraph(5, 7)
 
 let numEdges = gr.NumEdges
 
 // 1. find successors in the reverse graph notation
-let dStart, dEnd, dRevRowIndex = reverseGpu gr
-let revRowIndex = dRevRowIndex.Gather()
+let rowIndex = gr.RowIndex
 
-let edgeSucc = successors dStart dRevRowIndex
-let origSucc : int [] = Array.zeroCreate edgeSucc.Length
+let edgeSucc = predecessors gr
 
-edgeSucc.CopyTo(origSucc, 0)
 // 2. Partition the succesors graph
 // Create a line graph from the successor array:
 let linearGraph = StrGraph.FromVectorOfInts edgeSucc
@@ -31,7 +27,7 @@ linearGraph.Visualize()
 if maxPartition <> 1 then
     // 3. Create GC graph, where each vertex is a partition of the
     // Successor linear graph
-    let gcGraph, links, validity = generateCircuitGraph revRowIndex partition
+    let gcGraph, links, validity = generateCircuitGraph rowIndex partition
     gcGraph.Visualize(spanningTree=true)
 
     // 4. Create the spanning tree of the gcGraph & generate swips
@@ -40,7 +36,8 @@ if maxPartition <> 1 then
     let edges = bfs gcGraph
 
     // 5. Create the path by modifying the successor array
-    let fixedSuccessors = successorSwaps dRevRowIndex dSwips validity edgeSucc
+    let fixedPredecessors = predecessorSwaps rowIndex dSwips validity edgeSucc
 
-    let finalGraph = StrGraph.FromVectorOfInts fixedSuccessors
-    finalGraph.Visualize()
+    let finalGraph = StrGraph.FromVectorOfInts fixedPredecessors
+    finalGraph.Reverse.Visualize()
+gr.Visualize(edges=true)

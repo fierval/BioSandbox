@@ -34,11 +34,12 @@
                             successors.[i] <- successors.[j]
                             successors.[j] <- temp
 
-        let successorSwaps (dRowIndex : DeviceMemory<int>) (dSwips : DeviceMemory<bool>) (validity : bool []) (successors : int[]) =
+        let predecessorSwaps (rowIndex : int []) (dSwips : DeviceMemory<bool>) (validity : bool []) (predecessors : int[]) =
+            use dRowIndex = worker.Malloc(rowIndex)
             let lp = LaunchParam(divup dRowIndex.Length blockSize, blockSize)
 
-            use dSucc = worker.Malloc(successors)
+            use dPred = worker.Malloc(predecessors)
             use dValid = worker.Malloc(validity)
 
-            worker.Launch <@swapsKernel@> lp dRowIndex.Ptr dRowIndex.Length dValid.Ptr dSwips.Ptr dSucc.Ptr
-            dSucc.Gather()
+            worker.Launch <@swapsKernel@> lp dRowIndex.Ptr dRowIndex.Length dValid.Ptr dSwips.Ptr dPred.Ptr
+            dPred.Gather()
