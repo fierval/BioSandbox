@@ -7,8 +7,7 @@ module Euler =
     let findEuler (gr : DirectedGraph<'a>) =
         let numEdges = gr.NumEdges
 
-        // 1. find successors in the reverse graph notation
-        let dStart, _, dRevRowIndex = reverseGpu gr
+        let dStart, dEnd, dRevRowIndex = reverseGpu gr
         let revRowIndex = dRevRowIndex.Gather()
 
         let edgeSucc = successors dStart dRevRowIndex
@@ -16,17 +15,22 @@ module Euler =
         // 2. Partition the succesors graph
         // Create a line graph from the successor array:
         let linearGraph = StrGraph.FromVectorOfInts edgeSucc
-        let partition = partitionLinear linearGraph.ColIndex
+        let partition, maxPartition = partitionLinear linearGraph.ColIndex
 
-        // 3. Create GC graph, where each vertex is a partition of the
-        // Successor linear graph
-        let gcGraph, links, validity = generateCircuitGraph revRowIndex partition
+        // special case: we got lucky & already have it!
+        if maxPartition = 1 then
+            edgeSucc
+        else
+            // 3. Create GC graph, where each vertex is a partition of the
+            // Successor linear graph
+            let gcGraph, links, validity = generateCircuitGraph revRowIndex partition
+            gcGraph.Visualize(spanningTree=true)
 
-        // 4. Create the spanning tree of the gcGraph & generate swips
-        let dSwips = generateSwipsGpu gcGraph links numEdges
+            // 4. Create the spanning tree of the gcGraph & generate swips
+            let dSwips = generateSwipsGpu gcGraph links numEdges
 
-        // 5. Create the path by modifying the successor array
-        let fixedSuccessors = successorSwaps dRevRowIndex dSwips validity
-        fixedSuccessors
+            // 5. Create the path by modifying the successor array
+            let fixedSuccessors = successorSwaps dRevRowIndex dSwips validity edgeSucc
+            fixedSuccessors
 
 

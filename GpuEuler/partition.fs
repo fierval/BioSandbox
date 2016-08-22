@@ -44,7 +44,7 @@
 
             let dCompacted = worker.Malloc<int>(dColor.Length)
             worker.Launch <@remapColors@> lp dColor.Ptr dColor.Length dMap.Ptr dCompacted.Ptr
-            dCompacted.Gather()
+            dCompacted.Gather(), maxPartition
 
         /// <summary>
         /// Kernel that does edge-based partitioning

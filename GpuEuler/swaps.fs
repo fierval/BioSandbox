@@ -22,7 +22,8 @@
 
             if idx < len - 1 then
                 let end' = rowIndex.[idx + 1] - 1
-                for i = rowIndex.[idx] to end' do
+                let start = rowIndex.[idx]
+                for i = start to end' do
                     if swips.[i] then
                         let mutable j = i + 1
                         while j <= end' && not validity.[j] do

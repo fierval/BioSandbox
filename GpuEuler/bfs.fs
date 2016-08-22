@@ -40,8 +40,8 @@ namespace GpuEuler
         let selectSwipsKernel (edges : deviceptr<bool>) len (links : deviceptr<int>) (swips : deviceptr<int>) =
 
             let idx = blockIdx.x * blockDim.x + threadIdx.x
-            if idx < len then
-                __atomic_add (swips + links.[idx]) (if edges.[idx] then 1 else 0) |> ignore
+            if idx < len && edges.[idx] then
+                __atomic_exch (swips + links.[idx]) 1 |> ignore
 
         [<Kernel; ReflectedDefinition>]
         let convertSwipsKernel (swipsInt : deviceptr<int>) len (swips : deviceptr<bool>) =
@@ -104,6 +104,6 @@ namespace GpuEuler
             use dEdges = bfsGpu gr
 
             worker.Launch<@ selectSwipsKernel @> lp dEdges.Ptr gr.NumEdges dLinks.Ptr dSwipsInt.Ptr
-            worker.Launch<@ convertSwipsKernel @> lp dSwipsInt.Ptr gr.NumEdges dSwips.Ptr
+            worker.Launch<@ convertSwipsKernel @> lp dSwipsInt.Ptr numOfOriginalGraphEdges dSwips.Ptr
             dSwips
 
