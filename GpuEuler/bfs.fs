@@ -37,11 +37,17 @@ namespace GpuEuler
         /// <param name="links"> Mapping of partitined edges -> real graph edges</param>
         /// <param name="swips"> Switching pairs of successors</param>
         [<Kernel; ReflectedDefinition>]
-        let selectSwipsKernel (edges : deviceptr<bool>) len (links : deviceptr<int>) (swips : deviceptr<bool>) =
+        let selectSwipsKernel (edges : deviceptr<bool>) len (links : deviceptr<int>) (swips : deviceptr<int>) =
 
             let idx = blockIdx.x * blockDim.x + threadIdx.x
             if idx < len then
-                swips.[links.[idx]] <- edges.[idx]
+                __atomic_add (swips + links.[idx]) (if edges.[idx] then 1 else 0) |> ignore
+
+        [<Kernel; ReflectedDefinition>]
+        let convertSwipsKernel (swipsInt : deviceptr<int>) len (swips : deviceptr<bool>) =
+            let idx = blockIdx.x * blockDim.x + threadIdx.x
+            if idx < len then
+                swips.[idx] <- swipsInt.[idx] > 0
 
         /// <summary>
         /// Generates spanning tree by bfs on the gpu
@@ -92,10 +98,12 @@ namespace GpuEuler
         /// <param name= "numOfOriginalGraphEdges">Number of original graph edges</param>
         let generateSwipsGpu (gr : DirectedGraph<'a>) (links : int []) numOfOriginalGraphEdges =
             let dSwips = worker.Malloc(Array.create numOfOriginalGraphEdges false)
+            use dSwipsInt = worker.Malloc<int>(Array.zeroCreate numOfOriginalGraphEdges)
             use dLinks = worker.Malloc(links)
             let lp = LaunchParam(divup gr.NumEdges blockSize, blockSize)
             use dEdges = bfsGpu gr
 
-            worker.Launch<@ selectSwipsKernel @> lp dEdges.Ptr gr.NumEdges dLinks.Ptr dSwips.Ptr
+            worker.Launch<@ selectSwipsKernel @> lp dEdges.Ptr gr.NumEdges dLinks.Ptr dSwipsInt.Ptr
+            worker.Launch<@ convertSwipsKernel @> lp dSwipsInt.Ptr gr.NumEdges dSwips.Ptr
             dSwips
 

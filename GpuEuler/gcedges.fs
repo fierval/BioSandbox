@@ -38,7 +38,7 @@ namespace GpuEuler
                     if validity.[j] then
                         ea.Add colors.[j]
                         eb.Add colors.[pre]
-                        links.Add j
+                        links.Add pre
                         pre <- j
 
                 Array.fill status 0 status.Length false

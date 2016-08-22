@@ -7,6 +7,15 @@
         open Alea.CUDA.Utilities
         open Graphs.GpuGoodies
 
+        /// <summary>
+        /// Fixes successors by swapping an edge identified by the spanning tree
+        /// With the next "valid" edge. Parallelism by edges of a single vertex
+        /// </summary>
+        /// <param name="rowIndex">Row index of the original reversed graph</param>
+        /// <param name="len">number of vertices</param>
+        /// <param name="validity">validity array</param>
+        /// <param name="swips">switching paris array</param>
+        /// <param name="successors">original successors</param>
         [<Kernel; ReflectedDefinition>]
         let swapsKernel (rowIndex : deviceptr<int>) len (validity : deviceptr<bool>) (swips : deviceptr<bool>) (successors : deviceptr<int>) =
             let idx = blockDim.x * blockIdx.x + threadIdx.x
@@ -14,7 +23,7 @@
             if idx < len - 1 then
                 let end' = rowIndex.[idx + 1] - 1
                 for i = rowIndex.[idx] to end' do
-                    if swips.[idx] then
+                    if swips.[i] then
                         let mutable j = i + 1
                         while j <= end' && not validity.[j] do
                             j <- j + 1
@@ -24,11 +33,11 @@
                             successors.[i] <- successors.[j]
                             successors.[j] <- temp
 
-        let successorSwaps (dEnd : DeviceMemory<int>) (dSwips : DeviceMemory<bool>) (validity : bool []) (successors : int[]) =
-            let lp = LaunchParam(divup dEnd.Length blockSize, blockSize)
+        let successorSwaps (dRowIndex : DeviceMemory<int>) (dSwips : DeviceMemory<bool>) (validity : bool []) (successors : int[]) =
+            let lp = LaunchParam(divup dRowIndex.Length blockSize, blockSize)
 
             use dSucc = worker.Malloc(successors)
             use dValid = worker.Malloc(validity)
 
-            worker.Launch <@swapsKernel@> lp dEnd.Ptr dEnd.Length dValid.Ptr dSwips.Ptr dSucc.Ptr
+            worker.Launch <@swapsKernel@> lp dRowIndex.Ptr dRowIndex.Length dValid.Ptr dSwips.Ptr dSucc.Ptr
             dSucc.Gather()

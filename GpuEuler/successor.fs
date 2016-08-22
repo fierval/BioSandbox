@@ -107,4 +107,4 @@ module SuccessorGenerator =
                 edgeSuccessors.[rowIndex.[starts.[i]]] <- i
                 rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
             )
-        edgeSuccessors, rowIndex
+        edgeSuccessors

@@ -3,17 +3,15 @@
 [<AutoOpen>]
 module Euler =
     open Graphs
-    open Alea.CUDA
-    open Alea.CUDA.Utilities
-    open Graphs.GpuGoodies
 
     let findEuler (gr : DirectedGraph<'a>) =
         let numEdges = gr.NumEdges
 
         // 1. find successors in the reverse graph notation
-        let dStart, dEnd, dRevRowIndex = reverseGpu gr
+        let dStart, _, dRevRowIndex = reverseGpu gr
+        let revRowIndex = dRevRowIndex.Gather()
 
-        let edgeSucc, revRowIndex = successors dStart dRevRowIndex
+        let edgeSucc = successors dStart dRevRowIndex
 
         // 2. Partition the succesors graph
         // Create a line graph from the successor array:
