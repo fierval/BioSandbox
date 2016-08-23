@@ -8,7 +8,7 @@ open Emgu.CV.UI
 open Emgu.CV.CvEnum
 
 let createGraph (graph : string) (processName : string) (graphVizPath : string option) =
-    let workingDir = 
+    let workingDir =
         match graphVizPath with
         | Some p -> p
         | None -> String.Empty
@@ -35,7 +35,7 @@ let createGraph (graph : string) (processName : string) (graphVizPath : string o
                 let mat = CvInvoke.Imread(graphFile + ".png", LoadImageType.AnyColor)
                 let viewer = new ImageViewer(mat)
                 viewer.Show()
-            else failwith "could not create image file"                  
+            else failwith "could not create image file"
         finally
             if File.Exists graphFile then File.Delete graphFile
             if File.Exists (graphFile + ".png") then File.Delete (graphFile + ".png")
