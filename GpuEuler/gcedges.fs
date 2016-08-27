@@ -8,9 +8,17 @@ namespace GpuEuler
         open Graphs.GpuGoodies
         open System.Collections.Generic
         open GpuCompact
+        open System.Linq
 
         [<Literal>]
         let MaxColros = 1000
+
+        [<Kernel; ReflectedDefinition>]
+        let createMapBasedOnMinusOne (arr : deviceptr<int>) len (out : deviceptr<int>) =
+            let ind = blockIdx.x * blockDim.x + threadIdx.x
+
+            if ind < len then
+                out.[ind] <- if arr.[ind] < 0 then 0 else 1
 
         /// <summary>
         /// Takes the graph rowIndex and generates an array of valid swaps
@@ -46,14 +54,6 @@ namespace GpuEuler
 
                 Array.fill status 0 status.Length false
 
-            // convert to graph
-            let eaArr = ea.ToArray()
-            let ebArr = eb.ToArray()
-
-            ea.AddRange ebArr
-            eb.AddRange eaArr
-            links.AddRange links
-
             ea.ToArray(), eb.ToArray(), links.ToArray(), validity
 
         [<Kernel; ReflectedDefinition>]
@@ -86,19 +86,19 @@ namespace GpuEuler
             let lp = LaunchParam(divup numVertices blockSize, blockSize)
             let numEdges = rowIndex.[rowIndex.Length - 1]
 
-            let zeros : int [] = Array.zeroCreate numEdges
+            let nans : int [] = Array.create numEdges -1
             let ones : int [] = Array.create numEdges 1
 
-            use dLinks = worker.Malloc<int>(zeros)
+            use dLinks = worker.Malloc<int>(nans)
             use dValidity = worker.Malloc<int>(ones)
-            use dEa = worker.Malloc<int>(zeros)
-            use dEb = worker.Malloc<int>(zeros)
+            use dEa = worker.Malloc<int>(nans)
+            use dEb = worker.Malloc<int>(nans)
             use dColors = worker.Malloc(colors)
             use dRowIndex = worker.Malloc(rowIndex)
 
             worker.Launch <@circuitGraphKernel@> lp dRowIndex.Ptr numVertices dLinks.Ptr dValidity.Ptr dEa.Ptr dEb.Ptr dColors.Ptr
 
-            let compact (a : DeviceMemory<int>) = a |> compactGpu |> (fun c -> c.Gather())
+            let compact (a : DeviceMemory<int>) = a |> compactGpuWithKernel <@createMapBasedOnMinusOne@> |> (fun c -> c.Gather())
 
             let ea = compact dEa
             let eb = compact dEb
@@ -114,13 +114,13 @@ namespace GpuEuler
         /// <param name="colors">partition created in the previous step</param>
         let generateCircuitGraph (rowIndex : int[]) (colors : int []) =
             let ea, eb, links, validity =
-                if colors.Length < 1000 then
+                if colors.Length < MaxColros then
                     generateCircuitGraphGpu rowIndex colors
                 else
                     generateCircuitGraphLinear rowIndex colors
 
             let starts, colIndex, linkPos =
-                Seq.zip3 ea eb links
+                Seq.zip3 [|yield! ea; yield! eb|] [|yield! eb; yield! ea|] [|yield! links; yield! links|]
                 |> Seq.sortBy (fun (a, _, _) -> a)
                 |> Seq.toArray
                 |> Array.unzip3
@@ -132,3 +132,21 @@ namespace GpuEuler
                 |> Array.scan (+) 0
 
             (StrGraph.FromInts newRowIndex colIndex), linkPos, validity
+
+        let generateCircuitGraphDebug (rowIndex : int []) (colors : int[]) =
+            let ea, eb, links, validity = generateCircuitGraphLinear rowIndex colors
+
+            let starts, colIndex, linkPos =
+                Seq.zip3 [|yield! ea; yield! eb|] [|yield! eb; yield! ea|] [|yield! links; yield! links|]
+                |> Seq.sortBy (fun (a, _, _) -> a)
+                |> Seq.toArray
+                |> Array.unzip3
+
+            let newRowIndex =
+                starts
+                |> Array.groupBy id
+                |> Array.map (fun (_, v) -> v.Length)
+                |> Array.scan (+) 0
+
+            (StrGraph.FromInts newRowIndex colIndex), linkPos, validity
+

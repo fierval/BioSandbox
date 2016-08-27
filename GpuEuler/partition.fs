@@ -27,7 +27,7 @@
 
         /// <summary>
         /// Normalizes our partition.
-        /// Remaps partition colors to the range of 0..n, n = # of colors.
+        /// Remaps partition colors to the range of 0..n - 1, n = # of colors.
         /// </summary>
         /// <param name="dColor"></param>
         let normalizePartition (dColor : DeviceMemory<int>) =

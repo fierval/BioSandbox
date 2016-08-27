@@ -41,3 +41,7 @@ if maxPartition <> 1 then
     let finalGraph = StrGraph.FromVectorOfInts fixedPredecessors
     finalGraph.Reverse.Visualize()
 gr.Visualize(edges=true)
+
+let eulerCycle = findEuler gr
+let finalGraph = StrGraph.FromVectorOfInts eulerCycle
+finalGraph.Reverse.Visualize()

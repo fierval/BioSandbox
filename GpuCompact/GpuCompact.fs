@@ -22,7 +22,7 @@ let internal worker = Worker.Default
 let internal target = GPUModuleTarget.Worker worker
 let internal blockSize = 512
 
-let internal compactGpuWithKernel (mapKernel : Expr<deviceptr<int> -> int -> deviceptr<int> -> unit>) (dArr : DeviceMemory<int>) =
+let compactGpuWithKernel (mapKernel : Expr<deviceptr<int> -> int -> deviceptr<int> -> unit>) (dArr : DeviceMemory<int>) =
     let origLen = dArr.Length
     let lp = LaunchParam(divup origLen blockSize, blockSize)
 

@@ -14,7 +14,6 @@ module Euler =
         // Create a line graph from the successor array:
         let linearGraph = StrGraph.FromVectorOfInts edgePredecessors
         let partition, maxPartition = partitionLinear linearGraph.ColIndex
-        linearGraph.Visualize()
 
         if maxPartition <> 1 then
             // 3. Create GC graph, where each vertex is a partition of the
