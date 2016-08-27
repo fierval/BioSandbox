@@ -80,6 +80,7 @@
     <None Include="Scripts\load-references-release.fsx" />
     <None Include="Scripts\load-project-release.fsx" />
     <None Include="Scripts\eulerTest.fsx" />
+    <None Include="Scripts\eulerPerf.fsx" />
     <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>

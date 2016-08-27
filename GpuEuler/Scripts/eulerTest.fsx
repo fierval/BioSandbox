@@ -5,11 +5,13 @@ open Graphs
 open System.IO
 open Alea.CUDA
 open Alea.CUDA.Utilities
+open System.Diagnostics
 
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let gr = StrGraph.GenerateEulerGraph(5, 7)
+let N = 500 * 1024
+let gr = StrGraph.GenerateEulerGraph(N, 5)
 
 let numEdges = gr.NumEdges
 
@@ -21,7 +23,7 @@ let edgeSucc = predecessors gr
 // 2. Partition the succesors graph
 // Create a line graph from the successor array:
 let linearGraph = StrGraph.FromVectorOfInts edgeSucc
-let partition, maxPartition = partitionLinear linearGraph.ColIndex
+let partition, maxPartition = partitionLinear edgeSucc
 linearGraph.Visualize()
 
 if maxPartition <> 1 then
@@ -41,7 +43,3 @@ if maxPartition <> 1 then
     let finalGraph = StrGraph.FromVectorOfInts fixedPredecessors
     finalGraph.Reverse.Visualize()
 gr.Visualize(edges=true)
-
-let eulerCycle = findEuler gr
-let finalGraph = StrGraph.FromVectorOfInts eulerCycle
-finalGraph.Reverse.Visualize()

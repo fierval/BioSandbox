@@ -119,7 +119,7 @@
         /// <param name="dStart">Starting points of edges</param>
         /// <param name="dEnd">Ending points of edges</param>
         /// <param name="nVertices">Num of graph vertices</param>
-        let partitionLinear (end' : int []) =
+        let partitionLinearGpu (end' : int []) =
             let lp = LaunchParam(divup end'.Length blockSize, blockSize)
 
             use dColor = worker.Malloc([|0..end'.Length - 1|])
@@ -131,3 +131,21 @@
                 worker.Launch <@ partionLinearGraphKernel @> lp dEnd.Ptr dColor.Ptr dEnd.Length dGo.Ptr
 
             normalizePartition dColor
+
+        /// <summary>
+        /// Partition the linear graph: graph, that consists only of cycles
+        /// Where in-degree(v) = out-degree(v) = 1 for all v
+        /// </summary>
+        let partitionLinear (end' : int [])=
+            let allVertices = HashSet<int>(end')
+            let colors = Array.create end'.Length -1
+            let mutable color = 0
+
+            while allVertices.Count > 0 do
+                let mutable v = allVertices.First()
+                while colors.[v] < 0 do
+                    allVertices.Remove v |> ignore
+                    colors.[v] <- color
+                    v <- end'.[v]
+                color <- color + 1
+            colors, color
