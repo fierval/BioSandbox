@@ -1,4 +1,4 @@
-﻿#load "load-project-debug.fsx"
+﻿#load "load-project-release.fsx"
 
 open GpuEuler
 open Graphs
@@ -14,7 +14,7 @@ let sw = Stopwatch()
 // Warm up the GPU
 findEuler <| StrGraph.GenerateEulerGraph(8, 5)
 
-let N = 5 * 1024 * 1024
+let N = 10 * 1024 * 1024
 let k = 5
 
 printfn "%s" (System.String.Format("Generating euler graph: {0:N}, {1:N}", N, k))

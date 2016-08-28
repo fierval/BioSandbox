@@ -132,17 +132,21 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
                 queue.Enqueue 0
                 visited.Add 0 |> ignore
 
-                while queue.Count > 0 do
+                // optimization: if we have already visited all vertices - abort
+                while queue.Count > 0 && visited.Count < nVertices do
                     let vertex = queue.Dequeue ()
 
-                    getVerticesAndEdges vertex
-                    ||> Array.iter2(fun v e ->
+                    let vertices, connectedEdges = getVerticesAndEdges vertex
+                    let mutable n = 0
+                    while n < vertices.Length && visited.Count < nVertices do
+                        let v = vertices.[n]
+                        let e = connectedEdges.[n]
                         if not (visited.Contains v) then
                             queue.Enqueue v
                             edges.Add(vertex, v)
                             edgeNums.[e] <- true
                             visited.Add(v) |> ignore
-                            )
+                        n <- n + 1
 
                 edges |> Seq.map(fun (st, e) -> verticesOrdinalToNames.[st], verticesOrdinalToNames.[e])
                 |> HashSet

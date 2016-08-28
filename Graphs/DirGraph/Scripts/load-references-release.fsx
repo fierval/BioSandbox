@@ -4,7 +4,6 @@
 #r "../../../packages/Alea.CUDA.IL.2.2.0.3307/lib/net40/Alea.CUDA.IL.dll"
 #r "../../../packages/Alea.CUDA.Unbound.2.2.0.3307/lib/net40/Alea.CUDA.Unbound.dll"
 #r "../../../packages/Alea.IL.2.2.0.3307/lib/net40/Alea.IL.dll"
-#r "../../DrawGraph/bin/Release/DrawGraph.dll"
 #r "../../../packages/EmguCV.3.1.0.1/lib/net30/Emgu.CV.UI.dll"
 #r "../../../packages/EmguCV.3.1.0.1/lib/net30/Emgu.CV.UI.GL.dll"
 #r "../../../packages/EmguCV.3.1.0.1/lib/net30/Emgu.CV.World.dll"
@@ -18,3 +17,4 @@
 #r "System.Windows.Forms.dll"
 #r "System.Xml.dll"
 #r "../../../packages/ZedGraph.5.1.5/lib/ZedGraph.dll"
+#r "../../DrawGraph/bin/Release/DrawGraph.dll"

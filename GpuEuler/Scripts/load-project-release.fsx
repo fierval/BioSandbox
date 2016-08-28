@@ -5,3 +5,5 @@
       "../partition.fs"
       "../gcedges.fs"
       "../bfs.fs"
+      "../swaps.fs"
+      "../euler.fs"
