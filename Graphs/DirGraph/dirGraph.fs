@@ -37,10 +37,18 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     let nameFromOrdinal = fun ordinal -> verticesOrdinalToNames.[ordinal]
     let ordinalFromName = fun name -> verticesNameToOrdinal.[name]
 
+    // vertices connected to the ordinal vertex
     let getVertexConnections ordinal =
         let start = rowIndex.[ordinal]
         let end' = rowIndex.[ordinal + 1] - 1
         colIndex.[start..end']
+
+    // vertices and edge #'s of vertices
+    // connected to the "ordinal" vertex
+    let getVerticesAndEdges ordinal =
+        let start = rowIndex.[ordinal]
+        let end' = rowIndex.[ordinal + 1] - 1
+        colIndex.[start..end'], [|start..end'|]
 
     let asOrdinalsEnumerable () =
         Seq.init nVertices (fun i -> i, getVertexConnections i)
@@ -116,6 +124,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     let spanningTree =
         lazy(
                 let edges = List<int * int>()
+                let edgeNums = Array.create nEdges false
 
                 // bfs traversal
                 let visited = HashSet<int>()
@@ -126,14 +135,18 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
                 while queue.Count > 0 do
                     let vertex = queue.Dequeue ()
 
-                    for v in getVertexConnections vertex do
+                    getVerticesAndEdges vertex
+                    ||> Array.iter2(fun v e ->
                         if not (visited.Contains v) then
                             queue.Enqueue v
                             edges.Add(vertex, v)
+                            edgeNums.[e] <- true
                             visited.Add(v) |> ignore
+                            )
 
                 edges |> Seq.map(fun (st, e) -> verticesOrdinalToNames.[st], verticesOrdinalToNames.[e])
                 |> HashSet
+                , edgeNums
         )
 
     member this.NumVertices = nVertices
@@ -196,7 +209,13 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// <summary>
     /// Finding the spanning tree by bfs traversal
     /// </summary>
-    member this.SpanningTree = spanningTree.Force()
+    member this.SpanningTree = fst (spanningTree.Force())
+
+    /// <summary>
+    /// A boolean array the size of NumEdges, where "true" means
+    /// this edge is part of the spanning tree.
+    /// </summary>
+    member this.SpanningTreeEdges = snd (spanningTree.Force())
 
     member this.IsConnected = this.Partition() |> Array.distinct |> Array.length |> ((=) 1)
 

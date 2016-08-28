@@ -112,11 +112,12 @@ namespace GpuEuler
         /// </summary>
         /// <param name="rowIndex">rowIndex of a reverse eulerian graph</param>
         /// <param name="colors">partition created in the previous step</param>
-        let generateCircuitGraph (rowIndex : int[]) (colors : int []) =
+        let generateCircuitGraph (rowIndex : int[]) (colors : int []) (maxColors : int) =
             let ea, eb, links, validity =
-                if colors.Length < MaxColros then
+                if maxColors < MaxColros then
                     generateCircuitGraphGpu rowIndex colors
                 else
+                    printfn "# of partitions: %d (CPU generation of CG)" colors.Length
                     generateCircuitGraphLinear rowIndex colors
 
             let starts, colIndex, linkPos =

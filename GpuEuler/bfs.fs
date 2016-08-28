@@ -43,12 +43,6 @@ namespace GpuEuler
             if idx < len && edges.[idx] then
                 __atomic_exch (swips + links.[idx]) 1 |> ignore
 
-        [<Kernel; ReflectedDefinition>]
-        let convertSwipsKernel (swipsInt : deviceptr<int>) len (swips : deviceptr<bool>) =
-            let idx = blockIdx.x * blockDim.x + threadIdx.x
-            if idx < len then
-                swips.[idx] <- swipsInt.[idx] > 0
-
         /// <summary>
         /// Generates spanning tree by bfs on the gpu
         //  In order to use weak connectivity, need to generate the undirected graph first
@@ -97,13 +91,12 @@ namespace GpuEuler
         /// <param name="links">Map from partitioned to original edges</param>
         /// <param name= "numOfOriginalGraphEdges">Number of original graph edges</param>
         let generateSwipsGpu (gr : DirectedGraph<'a>) (links : int []) numOfOriginalGraphEdges =
-            let dSwips = worker.Malloc(Array.create numOfOriginalGraphEdges false)
-            use dSwipsInt = worker.Malloc<int>(Array.zeroCreate numOfOriginalGraphEdges)
+            let dSwips = worker.Malloc(Array.create numOfOriginalGraphEdges 0)
             use dLinks = worker.Malloc(links)
             let lp = LaunchParam(divup gr.NumEdges blockSize, blockSize)
-            use dEdges = bfsGpu gr
 
-            worker.Launch<@ selectSwipsKernel @> lp dEdges.Ptr gr.NumEdges dLinks.Ptr dSwipsInt.Ptr
-            worker.Launch<@ convertSwipsKernel @> lp dSwipsInt.Ptr numOfOriginalGraphEdges dSwips.Ptr
+            use dEdges = worker.Malloc(gr.SpanningTreeEdges)
+
+            worker.Launch<@ selectSwipsKernel @> lp dEdges.Ptr gr.NumEdges dLinks.Ptr dSwips.Ptr
             dSwips
 

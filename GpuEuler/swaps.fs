@@ -17,14 +17,14 @@
         /// <param name="swips">switching paris array</param>
         /// <param name="successors">original successors</param>
         [<Kernel; ReflectedDefinition>]
-        let swapsKernel (rowIndex : deviceptr<int>) len (validity : deviceptr<bool>) (swips : deviceptr<bool>) (successors : deviceptr<int>) =
+        let swapsKernel (rowIndex : deviceptr<int>) len (validity : deviceptr<bool>) (swips : deviceptr<int>) (successors : deviceptr<int>) =
             let idx = blockDim.x * blockIdx.x + threadIdx.x
 
             if idx < len - 1 then
                 let end' = rowIndex.[idx + 1] - 1
                 let start = rowIndex.[idx]
                 for i = start to end' do
-                    if swips.[i] then
+                    if swips.[i] > 0 then
                         let mutable j = i + 1
                         while j <= end' && not validity.[j] do
                             j <- j + 1
@@ -34,7 +34,7 @@
                             successors.[i] <- successors.[j]
                             successors.[j] <- temp
 
-        let predecessorSwaps (rowIndex : int []) (dSwips : DeviceMemory<bool>) (validity : bool []) (predecessors : int[]) =
+        let predecessorSwaps (rowIndex : int []) (dSwips : DeviceMemory<int>) (validity : bool []) (predecessors : int[]) =
             use dRowIndex = worker.Malloc(rowIndex)
             let lp = LaunchParam(divup dRowIndex.Length blockSize, blockSize)
 

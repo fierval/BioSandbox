@@ -10,8 +10,9 @@ open System.Diagnostics
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let N = 500 * 1024
-let gr = StrGraph.GenerateEulerGraph(N, 5)
+let N = 20
+let k = 7
+let gr = StrGraph.GenerateEulerGraph(N, k)
 
 let numEdges = gr.NumEdges
 
@@ -29,7 +30,7 @@ linearGraph.Visualize()
 if maxPartition <> 1 then
     // 3. Create GC graph, where each vertex is a partition of the
     // Successor linear graph
-    let gcGraph, links, validity = generateCircuitGraph rowIndex partition
+    let gcGraph, links, validity = generateCircuitGraph rowIndex partition maxPartition
     gcGraph.Visualize(spanningTree=true)
 
     // 4. Create the spanning tree of the gcGraph & generate swips
