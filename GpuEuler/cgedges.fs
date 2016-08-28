@@ -117,7 +117,7 @@ namespace GpuEuler
                 if maxColors < MaxColros then
                     generateCircuitGraphGpu rowIndex colors
                 else
-                    printfn "# of partitions: %d (CPU generation of CG)" colors.Length
+                    printfn "# of partitions: %d (CPU generation of CG)" maxColors
                     generateCircuitGraphLinear rowIndex colors
 
             let starts, colIndex, linkPos =

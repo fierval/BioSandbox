@@ -14,7 +14,7 @@ let sw = Stopwatch()
 // Warm up the GPU
 findEuler <| StrGraph.GenerateEulerGraph(8, 5)
 
-let N = 10 * 1024 * 1024
+let N = 20 * 1024 * 1024
 let k = 5
 
 printfn "%s" (System.String.Format("Generating euler graph: {0:N}, {1:N}", N, k))
@@ -24,14 +24,10 @@ let gr = StrGraph.GenerateEulerGraph(N, k)
 sw.Stop()
 printfn "Generated euler graph in %A" sw.Elapsed
 
-//sw.Restart()
 let eulerCycle = findEulerTimed gr
-//sw.Stop()
-
-//printfn "GPU: %A" sw.Elapsed
 
 sw.Restart()
-let eulerVert = gr.FindEulerPath()
+let eulerVert = gr.FindEulerCycle()
 sw.Stop()
 
 printfn "CPU: Euler graph generated in %A" sw.Elapsed

@@ -223,17 +223,12 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
 
     member this.IsConnected = this.Partition() |> Array.distinct |> Array.length |> ((=) 1)
 
-    member this.FindEulerPath () =
-        // in the case of Eulerian path we need to figure out where to start:
-        let mutable curVertex =
-            if hasEulerPath.Force() then
-                let diffs = Array.map2 (-) this.RowIndex this.Reverse.RowIndex
-                try // if the vertex with out-degre > in-degree comes first...
-                    (diffs |> Array.findIndex (fun d -> d = 1)) - 1
-                with
-                _ -> diffs |> Array.findIndexBack (fun d -> d = -1)
-            else
-                0
+    /// <summary>
+    /// Find an Euler cycle or path
+    /// </summary>
+    /// <param name="start"></param>
+    member this.FindEulerCycle (?start) =
+        let mutable curVertex = defaultArg start 0
 
         let stack = Stack<int>()
         let visited = Dictionary<int, int []>()
@@ -259,6 +254,23 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
         if path.Length <> this.NumEdges + 1 then []
         else
             start::cycle |> List.map (fun i -> verticesOrdinalToNames.[i])
+
+    /// <summary>
+    /// When we are not sure we are looking for a complete cycle
+    /// </summary>
+    member this.FindEulerPath () =
+        // in the case of Eulerian path we need to figure out where to start:
+        let curVertex =
+            if hasEulerPath.Force() then
+                let diffs = Array.map2 (-) this.RowIndex this.Reverse.RowIndex
+                try // if the vertex with out-degre > in-degree comes first...
+                    (diffs |> Array.findIndex (fun d -> d = 1)) - 1
+                with
+                _ -> diffs |> Array.findIndexBack (fun d -> d = -1)
+            else
+                0
+        this.FindEulerCycle curVertex
+
 
     /// <summary>
     /// Edge-based partitioning of the graph into connected components
