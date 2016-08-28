@@ -64,7 +64,7 @@
   <ItemGroup>
     <Compile Include="successor.fs" />
     <Compile Include="partition.fs" />
-    <Compile Include="gcedges.fs" />
+    <Compile Include="cgedges.fs" />
     <Compile Include="bfs.fs" />
     <Compile Include="swaps.fs" />
     <Compile Include="euler.fs" />

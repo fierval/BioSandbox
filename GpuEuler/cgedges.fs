@@ -1,7 +1,7 @@
 namespace GpuEuler
 
     [<AutoOpen>]
-    module GCEdges =
+    module CGEdges =
         open Graphs
         open Alea.CUDA
         open Alea.CUDA.Utilities
