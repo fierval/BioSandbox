@@ -100,7 +100,7 @@ namespace GpuEuler
 //            worker.Launch<@ selectSwipsKernel @> lp dEdges.Ptr gr.NumEdges dLinks.Ptr dSwips.Ptr
 //            dSwips
 
-        let fixPredecessors (gr : DirectedGraph<'a>) (links : int[]) (startingVertexToEdge : int []) (predecessors : int []) (validity : bool []) =
+        let fixPredecessors (gr : DirectedGraph<'a>) (links : int[]) (predecessors : int []) (validity : bool []) =
             let edges = gr.SpanningTreeEdges
 
             let swips = edges |> Array.map (fun e -> links.[e])

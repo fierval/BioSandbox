@@ -9,7 +9,7 @@ module Euler =
         let numEdges = gr.NumEdges
 
         // 1. find successors in the reverse graph notation
-        let mutable edgePredecessors, startingVertexToEdge  = predecessors gr
+        let mutable edgePredecessors  = predecessors gr
 
         // 2. Partition the succesors graph
         // Create a line graph from the successor array:
@@ -25,7 +25,7 @@ module Euler =
 //
 //            // 5. Create the path by modifying the successor array
 //            let fixedPredecessors = predecessorSwaps gr.RowIndex dSwips validity edgePredecessors
-            edgePredecessors <- fixPredecessors gcGraph links startingVertexToEdge edgePredecessors validity
+            edgePredecessors <- fixPredecessors gcGraph links edgePredecessors validity
         
         edgePredecessors
 
@@ -40,7 +40,7 @@ module Euler =
 
         let sw = Stopwatch()
         sw.Restart()
-        let mutable edgePredecessors, startingVertexToEdge  = predecessors gr
+        let mutable edgePredecessors  = predecessors gr
         sw.Stop()
 
         printfn "1. Predecessors computed in %A" sw.Elapsed
@@ -58,7 +58,7 @@ module Euler =
             sw.Restart()
             // 3. Create GC graph, where each vertex is a partition of the
             // Successor linear graph
-            let gcGraph, links, validity = generateCircuitGraph gr.RowIndex partition maxPartition
+            let gcGraph, links, validity = generateCircuitGraphDebug gr.RowIndex partition //maxPartition
             sw.Stop()
 
             printfn "3. Circuit graph generated in %A" sw.Elapsed
@@ -73,7 +73,7 @@ module Euler =
             sw.Restart()
             // 5. Create the path by modifying the successor array
             //let fixedPredecessors = predecessorSwaps gr.RowIndex dSwips validity edgePredecessors
-            edgePredecessors <- fixPredecessors gcGraph links startingVertexToEdge edgePredecessors validity
+            edgePredecessors <- fixPredecessors gcGraph links edgePredecessors validity
 
             sw.Stop()
 

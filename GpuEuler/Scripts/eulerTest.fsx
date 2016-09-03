@@ -10,7 +10,7 @@ open System.Diagnostics
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let N = 7
+let N = 10
 let k = 3
 let gr = StrGraph.GenerateEulerGraph(N, k)
 
@@ -19,7 +19,7 @@ let numEdges = gr.NumEdges
 // 1. find successors in the reverse graph notation
 let rowIndex = gr.RowIndex
 
-let edgePredecessors, startingVertexToEdge = predecessors gr
+let edgePredecessors = predecessors gr
 
 // 2. Partition the succesors graph
 // Create a line graph from the successor array:
@@ -38,7 +38,7 @@ if maxPartition <> 1 then
 
     // 5. Create the path by modifying the successor array
     //let fixedPredecessors = predecessorSwaps rowIndex dSwips validity edgeSucc
-    let fixedPredecessors = fixPredecessors gcGraph links startingVertexToEdge edgePredecessors validity
+    let fixedPredecessors = fixPredecessors gcGraph links edgePredecessors validity
 
     let finalGraph = StrGraph.FromVectorOfInts fixedPredecessors
     finalGraph.Reverse.Visualize()

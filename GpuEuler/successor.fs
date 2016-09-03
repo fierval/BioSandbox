@@ -118,15 +118,12 @@ module SuccessorGenerator =
         let rowIndex = arrayCopy gr.RowIndex
         let ends = gr.ColIndex
 
-        let startingVertexOfEdge : int [] = Array.zeroCreate gr.NumEdges
-
         let predecessors = Array.zeroCreate ends.Length
 
         [|0..ends.Length - 1|]
             |> Array.iter
             (fun i ->
                 predecessors.[rowIndex.[ends.[i]]] <- i
-                startingVertexOfEdge.[rowIndex.[ends.[i]]] <- ends.[i]
                 rowIndex.[ends.[i]] <- rowIndex.[ends.[i]] + 1
             )
-        predecessors, startingVertexOfEdge
+        predecessors
