@@ -90,13 +90,32 @@ namespace GpuEuler
         /// <param name="gr">Partitioned graph</param>
         /// <param name="links">Map from partitioned to original edges</param>
         /// <param name= "numOfOriginalGraphEdges">Number of original graph edges</param>
-        let generateSwipsGpu (gr : DirectedGraph<'a>) (links : int []) numOfOriginalGraphEdges =
-            let dSwips = worker.Malloc(Array.create numOfOriginalGraphEdges 0)
-            use dLinks = worker.Malloc(links)
-            let lp = LaunchParam(divup gr.NumEdges blockSize, blockSize)
+//        let generateSwipsGpu (gr : DirectedGraph<'a>) (links : int []) numOfOriginalGraphEdges =
+//            let dSwips = worker.Malloc(Array.create numOfOriginalGraphEdges 0)
+//            use dLinks = worker.Malloc(links)
+//            let lp = LaunchParam(divup gr.NumEdges blockSize, blockSize)
+//
+//            use dEdges = worker.Malloc(gr.SpanningTreeEdges)
+//
+//            worker.Launch<@ selectSwipsKernel @> lp dEdges.Ptr gr.NumEdges dLinks.Ptr dSwips.Ptr
+//            dSwips
 
-            use dEdges = worker.Malloc(gr.SpanningTreeEdges)
+        let fixPredecessors (gr : DirectedGraph<'a>) (links : int[]) (startingVertexToEdge : int []) (predecessors : int []) (validity : bool []) =
+            let edges = gr.SpanningTreeEdges
 
-            worker.Launch<@ selectSwipsKernel @> lp dEdges.Ptr gr.NumEdges dLinks.Ptr dSwips.Ptr
-            dSwips
+            let swips = edges |> Array.map (fun e -> links.[e])
 
+            swips
+            |> Array.iter( fun s -> 
+                let mutable j = s + 1
+                while not validity.[j] do
+                    j <- j + 1
+
+                let temp = predecessors.[s]
+                predecessors.[s] <- predecessors.[j]
+                predecessors.[j] <- temp
+
+            )
+
+            predecessors
+            

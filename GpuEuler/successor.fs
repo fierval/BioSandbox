@@ -108,17 +108,25 @@ module SuccessorGenerator =
                 rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
             )
         edgeSuccessors
-
+         
+    /// <summary>
+    /// Collects predecessor information. Also creats a map of edges to vertices from which
+    /// they start
+    /// </summary>
+    /// <param name="gr"></param>
     let predecessors (gr : DirectedGraph<'a>) =
         let rowIndex = arrayCopy gr.RowIndex
-        let starts = gr.ColIndex
+        let ends = gr.ColIndex
 
-        let predecessors = Array.zeroCreate starts.Length
+        let startingVertexOfEdge : int [] = Array.zeroCreate gr.NumEdges
 
-        [|0..starts.Length - 1|]
+        let predecessors = Array.zeroCreate ends.Length
+
+        [|0..ends.Length - 1|]
             |> Array.iter
             (fun i ->
-                predecessors.[rowIndex.[starts.[i]]] <- i
-                rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
+                predecessors.[rowIndex.[ends.[i]]] <- i
+                startingVertexOfEdge.[rowIndex.[ends.[i]]] <- ends.[i]
+                rowIndex.[ends.[i]] <- rowIndex.[ends.[i]] + 1
             )
-        predecessors
+        predecessors, startingVertexOfEdge

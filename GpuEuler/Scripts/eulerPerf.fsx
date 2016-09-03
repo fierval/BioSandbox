@@ -24,6 +24,11 @@ let gr = StrGraph.GenerateEulerGraph(N, k)
 sw.Stop()
 printfn "Generated euler graph in %A" sw.Elapsed
 
+sw.Restart()
+let edges = gr.OrdinalEdges
+sw.Stop()
+printfn "Generated edges in %A" sw.Elapsed
+
 let eulerCycle = findEulerTimed gr
 
 sw.Restart()

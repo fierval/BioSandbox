@@ -124,8 +124,8 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     let spanningTree =
         lazy(
                 let edges = List<int * int>()
-                let edgeNums = Array.create nEdges false
-
+                let edgeNums = List<int>()
+                
                 // bfs traversal
                 let visited = HashSet<int>()
                 let queue = Queue<int>()
@@ -144,13 +144,13 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
                         if not (visited.Contains v) then
                             queue.Enqueue v
                             edges.Add(vertex, v)
-                            edgeNums.[e] <- true
+                            edgeNums.Add(e)
                             visited.Add(v) |> ignore
                         n <- n + 1
 
                 edges |> Seq.map(fun (st, e) -> verticesOrdinalToNames.[st], verticesOrdinalToNames.[e])
                 |> HashSet
-                , edgeNums
+                , edgeNums.ToArray()
         )
 
     member this.NumVertices = nVertices

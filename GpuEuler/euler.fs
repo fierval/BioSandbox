@@ -9,7 +9,7 @@ module Euler =
         let numEdges = gr.NumEdges
 
         // 1. find successors in the reverse graph notation
-        let edgePredecessors = predecessors gr
+        let mutable edgePredecessors, startingVertexToEdge  = predecessors gr
 
         // 2. Partition the succesors graph
         // Create a line graph from the successor array:
@@ -21,13 +21,13 @@ module Euler =
             let gcGraph, links, validity = generateCircuitGraph gr.RowIndex partition maxPartition
 
             // 4. Create the spanning tree of the gcGraph & generate swips
-            let dSwips = generateSwipsGpu gcGraph links numEdges
-
-            // 5. Create the path by modifying the successor array
-            let fixedPredecessors = predecessorSwaps gr.RowIndex dSwips validity edgePredecessors
-            fixedPredecessors
-        else
-            edgePredecessors
+//            let dSwips = generateSwipsGpu gcGraph links numEdges
+//
+//            // 5. Create the path by modifying the successor array
+//            let fixedPredecessors = predecessorSwaps gr.RowIndex dSwips validity edgePredecessors
+            edgePredecessors <- fixPredecessors gcGraph links startingVertexToEdge edgePredecessors validity
+        
+        edgePredecessors
 
 
 
@@ -40,7 +40,7 @@ module Euler =
 
         let sw = Stopwatch()
         sw.Restart()
-        let edgePredecessors = predecessors gr
+        let mutable edgePredecessors, startingVertexToEdge  = predecessors gr
         sw.Stop()
 
         printfn "1. Predecessors computed in %A" sw.Elapsed
@@ -65,22 +65,20 @@ module Euler =
 
             sw.Restart()
             // 4. Create the spanning tree of the gcGraph & generate swips
-            let dSwips = generateSwipsGpu gcGraph links numEdges
+            //let dSwips = generateSwipsGpu gcGraph links numEdges
             sw.Stop()
 
-            printfn "4. Swips generated in %A" sw.Elapsed
+            //printfn "4. Swips generated in %A" sw.Elapsed
 
             sw.Restart()
             // 5. Create the path by modifying the successor array
-            let fixedPredecessors = predecessorSwaps gr.RowIndex dSwips validity edgePredecessors
+            //let fixedPredecessors = predecessorSwaps gr.RowIndex dSwips validity edgePredecessors
+            edgePredecessors <- fixPredecessors gcGraph links startingVertexToEdge edgePredecessors validity
+
             sw.Stop()
 
             printfn "5. Swips implemented in %A" sw.Elapsed
-            gsw.Stop()
-            printfn "GPU: Euler graph generated in %A" gsw.Elapsed
-            fixedPredecessors
-        else
-            gsw.Stop()
-            printfn "Euler graph generated in %A" gsw.Elapsed
-            edgePredecessors
+        gsw.Stop()
+        printfn "Euler graph generated in %A" gsw.Elapsed
+        edgePredecessors
 

@@ -8,7 +8,7 @@
         open Graphs.GpuGoodies
 
         /// <summary>
-        /// Fixes successors by swapping an edge identified by the spanning tree
+        /// Fixes predecessors by swapping an edge identified by the spanning tree
         /// With the next "valid" edge. Parallelism by edges of a single vertex
         /// </summary>
         /// <param name="rowIndex">Row index of the original reversed graph</param>
