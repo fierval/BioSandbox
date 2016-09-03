@@ -14,7 +14,7 @@ let sw = Stopwatch()
 // Warm up the GPU
 findEuler <| StrGraph.GenerateEulerGraph(8, 5)
 
-let N = 1 * 500 * 1024
+let N = 10 * 1024 * 1024
 let k = 5
 let avgedges = [1..k] |> List.map float |> List.average
 
