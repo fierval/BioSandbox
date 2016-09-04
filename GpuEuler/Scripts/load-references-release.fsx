@@ -18,6 +18,7 @@
 #r "System.Windows.Forms.dll"
 #r "System.Xml.dll"
 #r "../../packages/ZedGraph.5.1.5/lib/ZedGraph.dll"
+#r "../../packages/FSharp.Charting.0.90.14/lib/net40/FSharp.Charting.dll"
 #r "../../Graphs/DirGraph/bin/Release/DirGraph.dll"
 #r "../../Graphs/DrawGraph/bin/Release/DrawGraph.dll"
 #r "../../GpuCompact/bin/Release/GpuCompact.dll"

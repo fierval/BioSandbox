@@ -1,7 +1,7 @@
 ﻿namespace GpuEuler
 
 [<AutoOpen>]
-module SuccessorGenerator =
+module PredecessorGenerator =
     open Graphs
     open Alea.CUDA
     open Alea.CUDA.Unbound
@@ -108,7 +108,7 @@ module SuccessorGenerator =
                 rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
             )
         edgeSuccessors
-         
+
     /// <summary>
     /// Collects predecessor information. Also creats a map of edges to vertices from which
     /// they start

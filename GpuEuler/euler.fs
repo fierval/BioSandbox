@@ -20,13 +20,10 @@ module Euler =
             // Successor linear graph
             let gcGraph, links, validity = generateCircuitGraph gr.RowIndex partition maxPartition
 
-            // 4. Create the spanning tree of the gcGraph & generate swips
-//            let dSwips = generateSwipsGpu gcGraph links numEdges
-//
-//            // 5. Create the path by modifying the successor array
-//            let fixedPredecessors = predecessorSwaps gr.RowIndex dSwips validity edgePredecessors
+            // 4. Create the path by modifying the successor array
+            //let fixedPredecessors = predecessorSwaps gr.RowIndex dSwips validity edgePredecessors
             edgePredecessors <- fixPredecessors gcGraph links edgePredecessors validity
-        
+
         edgePredecessors
 
 
@@ -58,20 +55,13 @@ module Euler =
             sw.Restart()
             // 3. Create GC graph, where each vertex is a partition of the
             // Successor linear graph
-            let gcGraph, links, validity = generateCircuitGraphDebug gr.RowIndex partition //maxPartition
+            let gcGraph, links, validity = generateCircuitGraph gr.RowIndex partition maxPartition
             sw.Stop()
 
             printfn "3. Circuit graph generated in %A" sw.Elapsed
 
             sw.Restart()
-            // 4. Create the spanning tree of the gcGraph & generate swips
-            //let dSwips = generateSwipsGpu gcGraph links numEdges
-            sw.Stop()
-
-            //printfn "4. Swips generated in %A" sw.Elapsed
-
-            sw.Restart()
-            // 5. Create the path by modifying the successor array
+            // 4. Create the path by modifying the successor array
             //let fixedPredecessors = predecessorSwaps gr.RowIndex dSwips validity edgePredecessors
             edgePredecessors <- fixPredecessors gcGraph links edgePredecessors validity
 
