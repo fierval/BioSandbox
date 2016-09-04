@@ -15,7 +15,10 @@ module Euler =
         // Create a line graph from the successor array:
         let partition, maxPartition = partitionLinear edgePredecessors
         if maxPartition = 1 then printfn "Generated Euler cycle in 2 passes"
+
         if maxPartition > 1000 then printfn "CG CPU generation"
+        printfn "Partition of LG: %d" maxPartition
+
         if maxPartition <> 1 then
             // 3. Create GC graph, where each vertex is a partition of the
             // Successor linear graph
