@@ -11,8 +11,8 @@ open System.Linq
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let N = 20
-let k = 5
+let N = 10
+let k = 3
 let gr = StrGraph.GenerateEulerGraph(N, k)
 
 let numEdges = gr.NumEdges
@@ -28,23 +28,20 @@ let linearGraph = StrGraph.FromVectorOfInts edgePredecessors
 let partition, maxPartition = partitionLinear edgePredecessors
 linearGraph.Visualize()
 
-if maxPartition <> 1 then
-    // 3. Create GC graph, where each vertex is a partition of the
-    // Successor linear graph
-    let gcGraph, links, validity = generateCircuitGraph rowIndex partition maxPartition
-    gcGraph.Visualize(spanningTree=true)
+//if maxPartition <> 1 then
+// 3. Create GC graph, where each vertex is a partition of the
+// Successor linear graph
+let gcGraph, links, validity = generateCircuitGraph rowIndex partition maxPartition
+gcGraph.Visualize(spanningTree=true)
 
-    // 4. Create the spanning tree of the gcGraph & generate swips
-    //let dSwips = generateSwipsGpu gcGraph links numEdges
+// 4. Create the spanning tree of the gcGraph & generate swips
+//let dSwips = generateSwipsGpu gcGraph links numEdges
 
-    // 5. Create the path by modifying the successor array
-    //let fixedPredecessors = predecessorSwaps rowIndex dSwips validity edgeSucc
-    let fixedPredecessors = fixPredecessors gcGraph links edgePredecessors validity
+// 5. Create the path by modifying the successor array
+//let fixedPredecessors = predecessorSwaps rowIndex dSwips validity edgeSucc
+let fixedPredecessors = fixPredecessors gcGraph links edgePredecessors validity
 
-    // every edge is traversed exactly once
-    let valid = validate gr fixedPredecessors
-    printfn "Euler cycle valid: %b" valid
-
-    let finalGraph = StrGraph.FromVectorOfInts fixedPredecessors
-    finalGraph.Reverse.Visualize()
+let finalGraph = StrGraph.FromVectorOfInts fixedPredecessors
+finalGraph.Reverse.Visualize()
 gr.Visualize(edges=true)
+

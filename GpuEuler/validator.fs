@@ -23,5 +23,18 @@ module Validator =
         )
 
 
+    /// <summary>
+    /// Convert the euler path represented as numbered edges to vertices path
+    /// </summary>
+    /// <param name="gr">Original graph</param>
+    /// <param name="edges">Euler cycle as numbered edges</param>
+    let toVertexPath (gr : DirectedGraph<'a>) (edges : int []) =
+        let grEdges = gr.Edges
 
+        let mutable j = 0
+        let mutable vertices = [fst grEdges.[j]; snd grEdges.[j]]
+        for i = 2 to gr.NumEdges do
+            j <- edges.[j]
+            vertices <- fst grEdges.[j]::vertices
+        vertices
 

@@ -28,8 +28,12 @@ printfn "Generated euler graph in %A" sw.Elapsed
 let eulerCycle = findEulerTimed gr
 
 sw.Restart()
+let vertPath = toVertexPath gr eulerCycle
+sw.Stop()
+printfn "Converted to vertex path in %A" sw.Elapsed
+
+sw.Restart()
 let eulerVert = gr.FindEulerCycle()
 sw.Stop()
 
-printfn "CPU: Euler graph generated in %A" sw.Elapsed
-
+printfn "CPU: Euler cycle generated in %A" sw.Elapsed
