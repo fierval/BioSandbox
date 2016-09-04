@@ -67,20 +67,19 @@
     <Compile Include="cgedges.fs" />
     <Compile Include="swips.fs" />
     <Compile Include="euler.fs" />
+    <Compile Include="validator.fs" />
     <Content Include="packages.config" />
     <None Include="Scripts\load-references-debug.fsx" />
     <None Include="Scripts\load-project-debug.fsx" />
     <None Include="Scripts\SuccessorTests.fsx" />
     <None Include="Scripts\Perf.fsx" />
     <None Include="Scripts\PartitionTests.fsx" />
-    <None Include="Scripts\GCTest.fsx" />
-    <None Include="Scripts\bfsTest.fsx" />
-    <None Include="Scripts\bfsPerf.fsx" />
     <None Include="Scripts\load-references-release.fsx" />
     <None Include="Scripts\load-project-release.fsx" />
-    <None Include="Scripts\eulerTest.fsx" />
+    <None Include="Scripts\eulerTestVis.fsx" />
     <None Include="Scripts\eulerPerf.fsx" />
     <None Include="Scripts\eulerChart.fsx" />
+    <None Include="Scripts\eulerTestAuto.fsx" />
     <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>

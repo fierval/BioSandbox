@@ -22,3 +22,4 @@
 #r "../../Graphs/DrawGraph/bin/Debug/DrawGraph.dll"
 #r "../../GpuCompact/bin/Debug/GpuCompact.dll"
 #r "../../GpuSort/bin/Debug/GpuSort.dll"
+#r "../../packages/FSharp.Charting.0.90.14/lib/net40/FSharp.Charting.dll"

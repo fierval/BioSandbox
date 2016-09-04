@@ -6,3 +6,4 @@
       "../cgedges.fs"
       "../swips.fs"
       "../euler.fs"
+      "../validator.fs"

@@ -6,6 +6,7 @@ open System.IO
 open Alea.CUDA
 open Alea.CUDA.Utilities
 open System.Diagnostics
+open System.Linq
 
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
@@ -39,6 +40,10 @@ if maxPartition <> 1 then
     // 5. Create the path by modifying the successor array
     //let fixedPredecessors = predecessorSwaps rowIndex dSwips validity edgeSucc
     let fixedPredecessors = fixPredecessors gcGraph links edgePredecessors validity
+
+    // every edge is traversed exactly once
+    let valid = validate gr fixedPredecessors
+    printfn "Euler cycle valid: %b" valid
 
     let finalGraph = StrGraph.FromVectorOfInts fixedPredecessors
     finalGraph.Reverse.Visualize()

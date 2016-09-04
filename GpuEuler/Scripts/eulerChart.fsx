@@ -44,7 +44,7 @@ for i in [0..5..20] do
     gr.FindEulerCycle() |> ignore
     sw.Stop()
     printfn "CPU: %A" sw.Elapsed
-    cpu <- (gr.NumEdges, float sw.Elapsed.Seconds) :: cpu
+    cpu <- (gr.NumEdges, float sw.Elapsed.TotalSeconds) :: cpu
 
 Chart.Combine(
     [Chart.Line(cpu, Name="CPU");
