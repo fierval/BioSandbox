@@ -30,7 +30,6 @@ namespace GpuEuler
             let numVertices = rowIndex.Length - 1
             let numEdges = rowIndex.[rowIndex.Length - 1]
 
-            let status = Array.create numColors false
             let validity = Array.create numEdges true
             let ea = List<int>()
             let eb = List<int>()
@@ -38,6 +37,7 @@ namespace GpuEuler
             let mutable pre = 0
 
             for i = 0 to numVertices - 1 do
+                let status = Array.create numColors false
                 for j = rowIndex.[i] to rowIndex.[i + 1] - 1 do
                     if not status.[colors.[j]] then
                         status.[colors.[j]] <- true
@@ -51,8 +51,6 @@ namespace GpuEuler
                         eb.Add colors.[pre]
                         links.Add pre
                         pre <- j
-
-                Array.fill status 0 status.Length false
 
             ea.ToArray(), eb.ToArray(), links.ToArray(), validity
 
