@@ -14,23 +14,23 @@ let sw = Stopwatch()
 // Warm up the GPU
 findEuler <| StrGraph.GenerateEulerGraph(8, 5)
 
-let N = 20 * 1024 * 1024
+let N = 10 * 1024 * 100
 let k = 5
 let avgedges = [1..k] |> List.map float |> List.average
 
 printfn "%s" (System.String.Format("Generating euler graph: vertices = {0:N0}; avg out/vertex: {1:N0}", N, avgedges))
 
 sw.Restart()
-let gr = StrGraph.GenerateEulerGraph(N, k)
+let gr = StrGraph.GenerateEulerGraphAlt(N, k * N)
 sw.Stop()
-printfn "Generated euler graph in %A" sw.Elapsed
+printfn "Generated euler graph in %A, edges: %s" sw.Elapsed (System.String.Format("{0:N0}", gr.NumEdges))
 
 let eulerCycle = findEulerTimed gr
 
-sw.Restart()
-let vertPath = toVertexPath gr eulerCycle
-sw.Stop()
-printfn "Converted to vertex path in %A" sw.Elapsed
+//sw.Restart()
+//let vertPath = toVertexPath gr eulerCycle
+//sw.Stop()
+//printfn "Converted to vertex path in %A" sw.Elapsed
 
 sw.Restart()
 let eulerVert = gr.FindEulerCycle()

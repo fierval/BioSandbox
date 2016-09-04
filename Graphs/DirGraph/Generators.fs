@@ -48,16 +48,45 @@ module Extensions =
                     |> Seq.unfold
                         (fun (st, k) ->
                             let idx = (i + k) % n
-                            if st = connections.[i] then None
-                            elif connectionsReverse.[idx] = 0
-                            then Some(-1, (st, k + 1))
+                            if st = connections.[i] then None // we have connected this vertex to all vertices possible
+                            elif connectionsReverse.[idx] = 0 then Some(-1, (st, k + 1)) // we cannot connect to vertex idx: its inbound connections quota is met
                             else
-                                connectionsReverse.[idx] <- connectionsReverse.[idx] - 1
+                                connectionsReverse.[idx] <- connectionsReverse.[idx] - 1 // connect to this vertex and move on
                                 Some(idx, (st + 1, k + 1)))
                     |> Seq.filter(fun x -> x >= 0)
-                colIndex.AddRange cols
-            DirectedGraph(rowIndex, colIndex, ([0..rowIndex.Count - 2].ToDictionary((fun s -> s.ToString()), id) :> IDictionary<string, int>))
+                colIndex.AddRange cols // these are all the vertices we could connect the i'th vertex to.
 
+            DirectedGraph(rowIndex, colIndex, [0..rowIndex.Count - 2].ToDictionary(string, id))
+
+        static member GenerateEulerGraphAlt (vNum, eNum) =
+
+            let rnd = Random(int DateTime.Now.Ticks)
+            let edges =
+                [
+                    yield! [(0, 1); (1, 0)]
+                    for i = 2 to vNum - 2 do
+                        let a = rnd.Next(0, i)
+                        let b = rnd.Next(0, i)
+                        yield! [(a, i); (i, b); (b, a)]
+                ].ToList()
+
+            let curCount = edges.Count
+            for i in [curCount + 1..2..eNum - 1] do
+                let a = rnd.Next(0, vNum)
+                let b = rnd.Next(0, vNum)
+                edges.AddRange([a, b; b, a])
+
+
+            let edgeArray = edges |> Seq.toArray |> Array.sortBy fst
+            let colIndex = edgeArray |> Array.map snd
+            let rowIndex =
+                edgeArray
+                |> Array.map fst
+                |> Array.groupBy id
+                |> Array.map (fun (k, v) -> v.Length)
+                |> Array.scan (+) 0
+
+            StrGraph(rowIndex, colIndex, [0..rowIndex.Count() - 2].ToDictionary(string, id))
 
 
         /// <summary>

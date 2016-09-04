@@ -53,6 +53,7 @@ module Euler =
         sw.Stop()
 
         printfn "2. Partitioned linear graph in %A" sw.Elapsed
+        printfn "Partition of LG: %d" maxPartition
 
 
         if maxPartition <> 1 then

@@ -12,8 +12,9 @@ Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIREC
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
 let N = 10
-let k = 3
+let k = 5
 let gr = StrGraph.GenerateEulerGraph(N, k)
+//let gr = StrGraph.GenerateEulerGraphAlt(N, N * k)
 
 let numEdges = gr.NumEdges
 
