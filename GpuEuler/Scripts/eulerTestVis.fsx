@@ -1,4 +1,4 @@
-﻿#load "load-project-debug.fsx"
+﻿#load "load-project-release.fsx"
 
 open GpuEuler
 open Graphs
@@ -13,8 +13,8 @@ Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, 
 
 let N = 10
 let k = 5
-let gr = StrGraph.GenerateEulerGraph(N, k)
-//let gr = StrGraph.GenerateEulerGraphAlt(N, N * k)
+//let gr = StrGraph.GenerateEulerGraph(N, k)
+let gr = StrGraph.GenerateEulerGraphAlt(N, N * k)
 
 let numEdges = gr.NumEdges
 

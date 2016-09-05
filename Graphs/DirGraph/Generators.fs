@@ -58,36 +58,32 @@ module Extensions =
 
             DirectedGraph(rowIndex, colIndex, [0..rowIndex.Count - 2].ToDictionary(string, id))
 
-        static member GenerateEulerGraphAlt (vNum, eNum) =
+        static member GenerateEulerGraphAlt (vNum, ?eNum) =
+
+            let eNum = defaultArg eNum 0
 
             let rnd = Random(int DateTime.Now.Ticks)
-            let edges =
+            let newVertEdges =
                 [
                     yield! [(0, 1); (1, 0)]
                     for i = 2 to vNum - 2 do
                         let a = rnd.Next(0, i)
                         let b = rnd.Next(0, i)
                         yield! [(a, i); (i, b); (b, a)]
-                ].ToList()
+                ]
 
-            let curCount = edges.Count
-            for i in [curCount + 1..2..eNum - 1] do
-                let a = rnd.Next(0, vNum)
-                let b = rnd.Next(0, vNum)
-                edges.AddRange([a, b; b, a])
+            let curCount = newVertEdges.Length
 
+            let additionalEdges =
+                [
+                    for i in [curCount + 1..2..eNum - 1] do
+                        let a = rnd.Next(0, vNum)
+                        let b = rnd.Next(0, vNum)
+                        yield! [a, b; b, a]
+                ]
+            let edges = [newVertEdges; additionalEdges] |> List.concat
 
-            let edgeArray = edges |> Seq.toArray |> Array.sortBy fst
-            let colIndex = edgeArray |> Array.map snd
-            let rowIndex =
-                edgeArray
-                |> Array.map fst
-                |> Array.groupBy id
-                |> Array.map (fun (k, v) -> v.Length)
-                |> Array.scan (+) 0
-
-            StrGraph(rowIndex, colIndex, [0..rowIndex.Count() - 2].ToDictionary(string, id))
-
+            StrGraph.FromIntEdges edges
 
         /// <summary>
         /// Create the graph from an array of strings
@@ -208,13 +204,16 @@ module Extensions =
         /// </summary>
         /// <param name="edges"></param>
         static member FromIntEdges (edges : seq<int * int>) =
-            let adjecency =
-                edges
-                |> Seq.groupBy fst
-                |> Seq.sortBy fst
-                |> Seq.map (fun (key, sq) -> string key + "->" + (sq |> Seq.map snd |> Seq.fold (fun st e -> st + "," + string e) ""))
+            let edgeArray = edges |> Seq.toArray |> Array.sortBy fst
+            let colIndex = edgeArray |> Array.map snd
+            let rowIndex =
+                edgeArray
+                |> Array.map fst
+                |> Array.groupBy id
+                |> Array.map (fun (k, v) -> v.Length)
+                |> Array.scan (+) 0
 
-            StrGraph.FromStrings adjecency
+            StrGraph(rowIndex, colIndex, [0..rowIndex.Count() - 2].ToDictionary(string, id))
 
         static member FromStrEdges (edges : seq<string * string>) =
             let adjecency =

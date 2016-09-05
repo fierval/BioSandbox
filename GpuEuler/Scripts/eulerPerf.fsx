@@ -16,7 +16,7 @@ findEuler <| StrGraph.GenerateEulerGraph(8, 5)
 
 let N = 10 * 1024 * 100
 let k = 5
-let avgedges = [1..k] |> List.map float |> List.average
+let avgedges k = [1..k] |> List.map float |> List.average
 
 printfn "%s" (System.String.Format("Generating euler graph: vertices = {0:N0}; avg out/vertex: {1:N0}", N, avgedges))
 
