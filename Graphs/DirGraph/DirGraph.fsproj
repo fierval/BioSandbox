@@ -63,7 +63,6 @@
     <None Include="Scripts\load-project-debug.fsx" />
     <None Include="Scripts\dirGraphPropertyTest.fsx" />
     <None Include="Scripts\dirGraphTest.fsx" />
-    <None Include="Scripts\debruijn.fsx" />
     <None Include="Scripts\rosalindEuler.fsx" />
     <None Include="Scripts\load-references-release.fsx" />
     <None Include="Scripts\load-project-release.fsx" />

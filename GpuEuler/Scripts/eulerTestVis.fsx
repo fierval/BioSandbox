@@ -11,8 +11,8 @@ open System.Linq
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let N = 10
-let k = 5
+let N = 2
+let k = 10
 //let gr = StrGraph.GenerateEulerGraph(N, k)
 let gr = StrGraph.GenerateEulerGraphAlt(N, N * k)
 

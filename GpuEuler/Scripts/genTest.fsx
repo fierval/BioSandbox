@@ -3,6 +3,6 @@
 open Graphs
 open GpuEuler
 
-let gr = StrGraph.GenerateEulerGraphAlt(15, 36)
+let gr = StrGraph.GenerateEulerGraphAlt(2, 10)
 gr.Visualize(euler=true)
 
