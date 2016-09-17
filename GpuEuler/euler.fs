@@ -9,7 +9,7 @@ module Euler =
         let numEdges = gr.NumEdges
 
         // 1. find successors in the reverse graph notation
-        let mutable edgePredecessors  = predecessors gr
+        let mutable edgePredecessors, colors, maxColors  = predecessors gr
 
         // 2. Partition the succesors graph
         // Create a line graph from the successor array:
@@ -41,7 +41,7 @@ module Euler =
 
         let sw = Stopwatch()
         sw.Restart()
-        let mutable edgePredecessors  = predecessors gr
+        let mutable edgePredecessors, colors, maxColors  = predecessors gr
         sw.Stop()
 
         printfn "1. Predecessors computed in %A" sw.Elapsed

@@ -110,20 +110,40 @@ module PredecessorGenerator =
         edgeSuccessors
 
     /// <summary>
-    /// Collects predecessor information. Also creats a map of edges to vertices from which
-    /// they start
+    /// Collects predecessor information.
+    /// Partitions the linear graph of edges.
     /// </summary>
     /// <param name="gr"></param>
     let predecessors (gr : DirectedGraph<'a>) =
+
         let rowIndex = arrayCopy gr.RowIndex
+
         let ends = gr.ColIndex
 
-        let predecessors = Array.zeroCreate ends.Length
+        let predecessors = Array.create gr.NumEdges -1
+        let colors = Array.create gr.NumEdges -1
+        let allEdges = HashSet([0..gr.NumEdges - 1])
 
-        [|0..ends.Length - 1|]
-            |> Array.iter
-            (fun i ->
-                predecessors.[rowIndex.[ends.[i]]] <- i
-                rowIndex.[ends.[i]] <- rowIndex.[ends.[i]] + 1
-            )
-        predecessors
+        let mutable curVertex = 0
+        let mutable curColor = 0
+        let mutable curPred = 0
+        colors.[0] <- curColor
+
+        while allEdges.Count > 0 do
+            let curEdge = rowIndex.[ends.[curPred]]
+            if allEdges.Contains curEdge then
+                predecessors.[curEdge] <- curPred
+                colors.[curEdge] <- curColor
+                curVertex <- ends.[curEdge]
+
+                // point start of the row to the next vertex, i.e. - different edge
+                rowIndex.[ends.[curPred]] <- rowIndex.[ends.[curPred]] + 1
+
+                allEdges.Remove curPred |> ignore
+                curPred <- curEdge
+            else
+                curColor <- curColor + 1
+                curPred <- allEdges.First()
+                colors.[curPred] <- curColor
+
+        predecessors, colors, curColor + 1
