@@ -8,4 +8,4 @@
 #r "System.Core.dll"
 #r "System.dll"
 #r "System.Numerics.dll"
-#r "../../GpuSort/bin/Debug/GpuSort.dll"
+#r "../../GpuSort/bin/Release/GpuSort.dll"

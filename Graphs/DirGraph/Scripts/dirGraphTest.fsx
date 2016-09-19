@@ -1,4 +1,4 @@
-﻿#load "load-project-debug.fsx"
+﻿#load "load-project-release.fsx"
 
 open Graphs
 open FsCheck

@@ -1,4 +1,4 @@
-﻿#load "load-project-debug.fsx"
+﻿#load "load-project-release.fsx"
 
 open Graphs
 open FsCheck
@@ -14,3 +14,11 @@ type Marker =
 
 Arb.registerByType(typeof<Marker>)
 Check.QuickAll(typeof<Marker>)
+
+let grGen = graphGen 3 50
+
+let gr = grGen.Sample(15, 5).[2]
+gr.Visualize(into=3, out= 3)
+
+let gre = StrGraph.GenerateEulerGraph(10, 5)
+gre.Visualize(into=3, out=3)

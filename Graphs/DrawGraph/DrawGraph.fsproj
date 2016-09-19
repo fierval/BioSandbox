@@ -54,9 +54,11 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="drawGraphs.fs" />
-    <None Include="drawGraphsTest.fsx" />
     <Content Include="OpenTK.dll.config" />
     <Content Include="packages.config" />
+    <None Include="Scripts\drawGraphsTest.fsx" />
+    <None Include="Scripts\load-references-release.fsx" />
+    <None Include="Scripts\load-project-release.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Emgu.CV.UI">
