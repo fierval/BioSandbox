@@ -17,7 +17,7 @@ module GpuGoodies =
             _ ->    false
         )
 
-    let gpuThresh = 10 * 1024 * 1024
+    let mutable gpuThresh = 10 * 1024 * 1024
     let blockSize = 1024
     let worker = if hasCuda.Force() then Worker.Default else Unchecked.defaultof<Worker>
     let target = if hasCuda.Force() then GPUModuleTarget.Worker worker else Unchecked.defaultof<GPUModuleTarget>

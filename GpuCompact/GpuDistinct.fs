@@ -21,11 +21,12 @@ let distinctSortedNums (ends : deviceptr<int>) len (grouped : deviceptr<int>) =
             grouped.[idx] <- 0
 
 // kernel to use for compaction: the first element always gets in
+// this works for non-negative, sorted arrays
 [<Kernel; ReflectedDefinition>]
 let createDistinctMap (arr : deviceptr<int>) len (out : deviceptr<int>) =
     let ind = blockIdx.x * blockDim.x + threadIdx.x
 
-    if ind < len then
+    if ind < len then // ind = 0 guarantees that the value '0' also gets in
         out.[ind] <- if arr.[ind] <> 0 || ind = 0 then 1 else 0
 
 /// <summary>

@@ -1,4 +1,4 @@
-#load "load-project-debug.fsx"
+#load "load-project-release.fsx"
 
 open Alea.CUDA
 open System.IO
@@ -10,22 +10,42 @@ open GpuCompact
 open GpuDistinct
 open System.Diagnostics
 
+let mutable N = 100
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let rnd = Random(int DateTime.Now.Ticks)
-let nums = List<int>()
-let n = 15 * 1024 * 1024
-let range = [0..n]
+let rnd = Random()
+let sw = Stopwatch()
 
-for i in range do
-    nums.Add (rnd.Next(0, rnd.Next(1, 1000)))
+// warm up the GPU
+let mutable sample = Array.init N (fun i -> rnd.Next(0, 1000))
+GpuDistinct.distinct sample
 
-let arr = nums.ToArray()
+for i = 1 to 3 do
+    N <- (pown 10 i) / 4  * 1024 * 1024
+    printfn "%s" (String.Format("Length: {0:N0}", N))
 
-let dist = arr |> Array.distinct |> Array.sort
+    sample <- Array.init N (fun i -> rnd.Next(0, 1000))
 
-let dist1 = distinct arr
+    sw.Restart()
+    sample |> Array.distinct |> ignore
+    sw.Stop()
+    printfn "CPU distinct: %A" sw.Elapsed
 
-dist = dist1
+    sw.Restart()
+    GpuDistinct.distinct sample |> ignore
+    sw.Stop()
+    printfn "GPU distinct: %A" sw.Elapsed
 
+N <-  300000000
+sample <- Array.init N (fun i -> rnd.Next(0, 1000))
+
+sw.Restart()
+sample |> Array.distinct |> ignore
+sw.Stop()
+printfn "CPU distinct: %A" sw.Elapsed
+
+sw.Restart()
+GpuDistinct.distinct sample |> ignore
+sw.Stop()
+printfn "GPU distinct: %A" sw.Elapsed

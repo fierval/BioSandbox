@@ -121,11 +121,18 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
             |> Array.map (fun c -> distinctColors.[c])
         )
 
+    let ordinalEdges =
+        lazy (
+                [|0..nVertices - 1|]
+                |> Array.map (fun v -> getVertexConnections v |> Array.map (fun c -> v, c))
+                |> Array.concat
+        )
+
     let spanningTree =
         lazy(
                 let edges = List<int * int>()
                 let edgeNums = List<int>()
-                
+
                 // bfs traversal
                 let visited = HashSet<int>()
                 let queue = Queue<int>()
@@ -187,12 +194,7 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
     /// <summary>
     /// Array of tuples of edge ordinals
     /// </summary>
-    member this.OrdinalEdges =
-        (lazy (
-                [|0..nVertices - 1|]
-                |> Array.map (fun v -> getVertexConnections v |> Array.map (fun c -> v, c))
-                |> Array.concat
-        )).Force()
+    member this.OrdinalEdges = ordinalEdges.Force()
 
     /// <summary>
     /// Array of tuples of all graph edges

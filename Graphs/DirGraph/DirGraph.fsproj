@@ -66,6 +66,7 @@
     <None Include="Scripts\rosalindEuler.fsx" />
     <None Include="Scripts\load-references-release.fsx" />
     <None Include="Scripts\load-project-release.fsx" />
+    <None Include="Scripts\gpuGoodies.fsx" />
     <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +116,11 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Windows.Forms" />
+    <ProjectReference Include="..\..\GpuCompact\GpuCompact.fsproj">
+      <Name>GpuCompact</Name>
+      <Project>{0dbdea6c-0796-40f8-9c21-dd0598b213c5}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\DrawGraph\DrawGraph.fsproj">
       <Name>DrawGraph</Name>
       <Project>{f8cfd85a-aeaf-47e4-8c5d-43669a7c00bf}</Project>
