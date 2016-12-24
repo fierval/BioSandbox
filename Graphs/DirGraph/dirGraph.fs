@@ -233,24 +233,24 @@ type DirectedGraph<'a when 'a:comparison> (rowIndex : int seq, colIndex : int se
         let mutable curVertex = defaultArg start 0
 
         let stack = Stack<int>()
-        let visited = Dictionary<int, int []>()
+        let connections = Dictionary<int, int []>()
         let start = curVertex
         let mutable cycle = []
-        visited.Add(curVertex, this.GetConnectedVertices curVertex)
+        connections.Add(curVertex, this.GetConnectedVertices curVertex)
         let mutable first = true
 
         while stack.Count > 0 || first do
             first <- false
-            let connected = visited.[curVertex]
+            let connected = connections.[curVertex]
             if connected.Length = 0 then
                 cycle <- curVertex :: cycle
                 curVertex <- stack.Pop()
             else
                 stack.Push curVertex
-                visited.[curVertex] <- connected.[1..]
+                connections.[curVertex] <- connected.[1..]
                 curVertex <- connected.[0]
-                if not (visited.ContainsKey curVertex) then
-                    visited.Add(curVertex, this.GetConnectedVertices curVertex)
+                if not (connections.ContainsKey curVertex) then
+                    connections.Add(curVertex, this.GetConnectedVertices curVertex)
 
         let path = start::cycle
         if path.Length <> this.NumEdges + 1 then []
