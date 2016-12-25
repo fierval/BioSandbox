@@ -9,7 +9,7 @@ module Euler =
         let numEdges = gr.NumEdges
 
         // 1. find successors in the reverse graph notation
-        let mutable edgePredecessors, colors, maxColors  = predecessors gr
+        let mutable edgePredecessors = predecessors gr
 
         // 2. Partition the succesors graph
         // Create a line graph from the successor array:
@@ -41,7 +41,7 @@ module Euler =
 
         let sw = Stopwatch()
         sw.Restart()
-        let mutable edgePredecessors, colors, maxColors  = predecessors gr
+        let mutable edgePredecessors = predecessors gr
         sw.Stop()
 
         printfn "1. Predecessors computed in %A" sw.Elapsed
@@ -53,7 +53,7 @@ module Euler =
         sw.Stop()
 
         printfn "2. Partitioned linear graph in %A" sw.Elapsed
-        printfn "Partition of LG: %d" maxPartition
+        printfn "Partitions of LG: %d" maxPartition
 
 
         if maxPartition <> 1 then
@@ -72,7 +72,7 @@ module Euler =
 
             sw.Stop()
 
-            printfn "5. Swips implemented in %A" sw.Elapsed
+            printfn "4. Swips implemented in %A" sw.Elapsed
         gsw.Stop()
         printfn "Euler graph generated in %A" gsw.Elapsed
         edgePredecessors

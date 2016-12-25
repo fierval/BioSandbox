@@ -96,19 +96,6 @@ module PredecessorGenerator =
         let dStart, dEnd, dRevRowIndex = reverseGpu gr
         DirectedGraph<'a>(dRevRowIndex.Gather(), dStart.Gather(), gr.NamedVertices)
 
-    let successors (dStart : DeviceMemory<int>) (dRowIndex : DeviceMemory<int>) =
-        let rowIndex = dRowIndex.Gather()
-        let starts = dStart.Gather()
-        let edgeSuccessors = Array.zeroCreate starts.Length
-
-        [|0..starts.Length - 1|]
-            |> Array.iter
-            (fun i ->
-                edgeSuccessors.[rowIndex.[starts.[i]]] <- i
-                rowIndex.[starts.[i]] <- rowIndex.[starts.[i]] + 1
-            )
-        edgeSuccessors
-
     /// <summary>
     /// Collects predecessor information.
     /// Partitions the linear graph of edges.
@@ -117,33 +104,15 @@ module PredecessorGenerator =
     let predecessors (gr : DirectedGraph<'a>) =
 
         let rowIndex = arrayCopy gr.RowIndex
-
         let ends = gr.ColIndex
 
         let predecessors = Array.create gr.NumEdges -1
-        let colors = Array.create gr.NumEdges -1
-        let allEdges = HashSet([0..gr.NumEdges - 1])
 
-        let mutable curVertex = 0
-        let mutable curColor = 0
-        let mutable curPred = 0
-        colors.[0] <- curColor
+        [|0..ends.Length - 1|]
+            |> Array.iter
+            (fun i ->
+                predecessors.[rowIndex.[ends.[i]]] <- i
+                rowIndex.[ends.[i]] <- rowIndex.[ends.[i]] + 1
+            )
 
-        while allEdges.Count > 0 do
-            let curEdge = rowIndex.[ends.[curPred]]
-            if allEdges.Contains curEdge then
-                predecessors.[curEdge] <- curPred
-                colors.[curEdge] <- curColor
-                curVertex <- ends.[curEdge]
-
-                // point start of the row to the next vertex, i.e. - different edge
-                rowIndex.[ends.[curPred]] <- rowIndex.[ends.[curPred]] + 1
-
-                allEdges.Remove curPred |> ignore
-                curPred <- curEdge
-            else
-                curColor <- curColor + 1
-                curPred <- allEdges.First()
-                colors.[curPred] <- curColor
-
-        predecessors, colors, curColor + 1
+        predecessors
