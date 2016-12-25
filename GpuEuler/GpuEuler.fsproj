@@ -82,7 +82,6 @@
     <None Include="Scripts\eulerTestAuto.fsx" />
     <None Include="Scripts\genTest.fsx" />
     <None Include="Scripts\debruijn.fsx" />
-    <None Include="Scripts\scratch.fsx" />
     <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>
