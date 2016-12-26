@@ -74,6 +74,6 @@ module Euler =
 
             printfn "4. Swips implemented in %A" sw.Elapsed
         gsw.Stop()
-        printfn "Euler graph generated in %A" gsw.Elapsed
+        printfn "GPU: Euler cycle generated in %A" gsw.Elapsed
         edgePredecessors
 
