@@ -18,16 +18,17 @@ let sw = Stopwatch()
 findEuler <| StrGraph.GenerateEulerGraph(8, 5)
 
 let N = 1024 * 1024
-let k = 7
+let k = 5
 let avgedges k = [1..k] |> List.map float |> List.average
 
 let seqElapsed, cudaElapsed =
     [1..10]
     |> List.map
         (fun i ->
-                printfn "%s" (System.String.Format("Generating euler graph: vertices = {0:N0}; avg out/vertex: {1:N0}", N * i, avgedges k))
+//                printfn "%s" (System.String.Format("Generating euler graph: vertices = {0:N0}; avg out/vertex: {1:N0}", N * i, avgedges k))
                 sw.Restart()
-                let gr = StrGraph.GenerateEulerGraph(N * i, k)
+                //let gr = StrGraph.GenerateEulerGraph(N * i, k)
+                let gr = StrGraph.GenerateEulerGraphAlt(N * i, 3 * i * N)
                 sw.Stop()
                 printfn "Generated euler graph in %A, edges: %s" sw.Elapsed (String.Format("{0:N0}", gr.NumEdges))
                 sw.Restart()

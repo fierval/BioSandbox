@@ -142,7 +142,7 @@
             let mutable color = 0
 
             while allVertices.Count > 0 do
-                let mutable v = allVertices.First()
+                let mutable v = allVertices.ElementAt(0)
                 while colors.[v] < 0 do
                     allVertices.Remove v |> ignore
                     colors.[v] <- color

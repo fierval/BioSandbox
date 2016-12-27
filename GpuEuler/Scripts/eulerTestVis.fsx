@@ -11,16 +11,13 @@ open System.Linq
 Alea.CUDA.Settings.Instance.Resource.AssemblyPath <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\packages\Alea.Cuda.2.2.0.3307\private")
 Alea.CUDA.Settings.Instance.Resource.Path <- Path.Combine(__SOURCE_DIRECTORY__, @"..\..\release")
 
-let N = 2
-let k = 10
+let N = 10 * 1024 * 1024
+let k = N * 5
 //let gr = StrGraph.GenerateEulerGraph(N, k)
-let gr = StrGraph.GenerateEulerGraphAlt(N, N * k)
-
-let numEdges = gr.NumEdges
+let gr = StrGraph.GenerateEulerGraphAlt(N, k)
+gr.Visualize(edges=true)
 
 // 1. find successors in the reverse graph notation
-let rowIndex = gr.RowIndex
-
 let edgePredecessors = predecessors gr
 
 // 2. Partition the succesors graph
@@ -32,7 +29,7 @@ linearGraph.Visualize()
 //if maxPartition <> 1 then
 // 3. Create GC graph, where each vertex is a partition of the
 // Successor linear graph
-let gcGraph, links, validity = generateCircuitGraph rowIndex partition maxPartition
+let gcGraph, links, validity = generateCircuitGraph gr.RowIndex partition maxPartition
 gcGraph.Visualize(spanningTree=true)
 
 // 4. Create the spanning tree of the gcGraph & generate swips
