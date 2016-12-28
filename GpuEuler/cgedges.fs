@@ -11,7 +11,7 @@ namespace GpuEuler
         open System.Linq
 
         [<Literal>]
-        let MaxColros = 1000
+        let MaxColors = 50000
 
         [<Kernel; ReflectedDefinition>]
         let createMapBasedOnMinusOne (arr : deviceptr<int>) len (out : deviceptr<int>) =
@@ -59,7 +59,7 @@ namespace GpuEuler
 
             let idx = blockDim.x * blockIdx.x + threadIdx.x
             if idx < numVertices then
-                let status : bool [] = __local__.Array(MaxColros)
+                let status : bool [] = __local__.Array(MaxColors)
                 for i = 0 to status.Length do
                     status.[i] <- false
 
@@ -112,7 +112,7 @@ namespace GpuEuler
         /// <param name="colors">partition created in the previous step</param>
         let generateCircuitGraph (rowIndex : int[]) (colors : int []) (maxColors : int) =
             let ea, eb, links, validity =
-                if maxColors < MaxColros then
+                if maxColors < MaxColors then
                     generateCircuitGraphGpu rowIndex colors
                 else
                     printfn "# of partitions: %d (CPU generation of CG)" maxColors

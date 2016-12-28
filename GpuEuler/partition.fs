@@ -137,15 +137,20 @@
         /// Where in-degree(v) = out-degree(v) = 1 for all v
         /// </summary>
         let partitionLinear (end' : int [])=
-            let allVertices = HashSet<int>(end')
             let colors = Array.create end'.Length -1
             let mutable color = 0
+            let mutable num = end'.Length
+            let mutable curIdx = 0
+            let mutable nextIdx = num - 1
 
-            while allVertices.Count > 0 do
-                let mutable v = allVertices.ElementAt(0)
+            while num > 0 && curIdx >= 0 do
+                let mutable v = curIdx
                 while colors.[v] < 0 do
-                    allVertices.Remove v |> ignore
                     colors.[v] <- color
                     v <- end'.[v]
                 color <- color + 1
+                num <- num - 1
+                while nextIdx >= 0 && colors.[nextIdx] >= 0 do
+                    nextIdx <- nextIdx - 1
+                curIdx <- nextIdx
             colors, color

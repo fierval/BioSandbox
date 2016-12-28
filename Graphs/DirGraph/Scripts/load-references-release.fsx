@@ -17,5 +17,5 @@
 #r "System.Windows.Forms.dll"
 #r "System.Xml.dll"
 #r "../../../packages/ZedGraph.5.1.5/lib/ZedGraph.dll"
-#r "../../DrawGraph/bin/Release/DrawGraph.dll"
-#r "../../../GpuCompact/bin/Release/GpuCompact.dll"
+#r "../../DrawGraph/bin/Debug/DrawGraph.dll"
+#r "../../../GpuCompact/bin/Debug/GpuCompact.dll"
