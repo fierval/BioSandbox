@@ -60,6 +60,7 @@
     <Error Condition="!Exists('..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets'))" />
     <Error Condition="!Exists('..\packages\EmguCV.3.1.0.1\build\EmguCV.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EmguCV.3.1.0.1\build\EmguCV.props'))" />
     <Error Condition="!Exists('..\packages\EmguCV.3.1.0.1\build\EmguCV.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EmguCV.3.1.0.1\build\EmguCV.targets'))" />
+    <Error Condition="!Exists('..\packages\Fody.1.28.3\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.28.3\build\Fody.targets'))" />
   </Target>
   <ItemGroup>
     <Compile Include="predecessor.fs" />
@@ -83,6 +84,7 @@
     <None Include="Scripts\genTest.fsx" />
     <None Include="Scripts\debruijn.fsx" />
     <Content Include="OpenTK.dll.config" />
+    <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Alea.CUDA">
@@ -163,6 +165,7 @@
     </Reference>
   </ItemGroup>
   <Import Project="..\packages\EmguCV.3.1.0.1\build\EmguCV.targets" Condition="Exists('..\packages\EmguCV.3.1.0.1\build\EmguCV.targets')" />
+  <Import Project="..\packages\Fody.1.28.3\build\Fody.targets" Condition="Exists('..\packages\Fody.1.28.3\build\Fody.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

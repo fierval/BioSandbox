@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SparseMatrix", "Graphs\SparseMatrix.fsproj", "{CAA4EB40-CEE8-4910-86E5-FFBC1ECC8E89}"
 EndProject
@@ -17,10 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandbox", "Sandbox", "{641E
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GpuCompact", "GpuCompact\GpuCompact.fsproj", "{0DBDEA6C-0796-40F8-9C21-DD0598B213C5}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Alea3Scan", "Alea3Scan\Alea3Scan.fsproj", "{1D221A62-EF3E-4A27-8A9A-562FC8170167}"
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -50,6 +49,10 @@ Global
 		{0DBDEA6C-0796-40F8-9C21-DD0598B213C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DBDEA6C-0796-40F8-9C21-DD0598B213C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DBDEA6C-0796-40F8-9C21-DD0598B213C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D221A62-EF3E-4A27-8A9A-562FC8170167}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D221A62-EF3E-4A27-8A9A-562FC8170167}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D221A62-EF3E-4A27-8A9A-562FC8170167}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D221A62-EF3E-4A27-8A9A-562FC8170167}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,5 +62,9 @@ Global
 		{8437015F-05C1-4A5F-9FB2-C115236E659C} = {641E05F2-0561-419F-A3FA-BB143CEDD045}
 		{3359D25F-850A-47C3-A662-8FB2E96A16BC} = {641E05F2-0561-419F-A3FA-BB143CEDD045}
 		{0DBDEA6C-0796-40F8-9C21-DD0598B213C5} = {641E05F2-0561-419F-A3FA-BB143CEDD045}
+		{1D221A62-EF3E-4A27-8A9A-562FC8170167} = {641E05F2-0561-419F-A3FA-BB143CEDD045}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
