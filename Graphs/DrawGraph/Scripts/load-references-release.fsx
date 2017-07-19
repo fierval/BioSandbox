@@ -1,8 +1,7 @@
 // Warning: generated file; your changes could be lost when a new file is generated.
 #I __SOURCE_DIRECTORY__
-#r "../../../packages/EmguCV.3.1.0.1/lib/net30/Emgu.CV.UI.dll"
-#r "../../../packages/EmguCV.3.1.0.1/lib/net30/Emgu.CV.UI.GL.dll"
-#r "../../../packages/EmguCV.3.1.0.1/lib/net30/Emgu.CV.World.dll"
+#r "../../../packages/Emgu.CV.3.2.0.2721/lib/net35/Emgu.CV.UI.dll"
+#r "../../../packages/Emgu.CV.3.2.0.2721/lib/net35/Emgu.CV.World.dll"
 #r "../../../packages/OpenTK.1.1.2225.0/lib/net20/OpenTK.dll"
 #r "../../../packages/OpenTK.GLControl.1.1.2225.0/lib/net20/OpenTK.GLControl.dll"
 #r "System.Core.dll"

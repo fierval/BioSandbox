@@ -32,7 +32,7 @@ let createGraph (graph : string) (processName : string) (graphVizPath : string o
 
             proc.WaitForExit()
             if proc.ExitCode = 0 then
-                let mat = CvInvoke.Imread(graphFile + ".png", LoadImageType.AnyColor)
+                let mat = CvInvoke.Imread(graphFile + ".png")
                 let viewer = new ImageViewer(mat)
                 viewer.Show()
             else failwith "could not create image file"
